@@ -25,4 +25,3 @@ public static class StringExtensions
         return new string(Convert(text.GetEnumerator()).ToArray());
     }
 }
-

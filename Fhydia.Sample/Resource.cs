@@ -83,14 +83,47 @@ public class ParsedEndpoint : Resource
     public HttpVerb Method { get; }
     public IEnumerable<ParsedParameter> Parameters { get; }
     public ParsedResult Result { get; }
+    public ParsedGroup Group { get; }
 
-    public ParsedEndpoint(string name, MethodInfo methodInfo, TypeInfo controllerType, Uri template, HttpVerb method, ParsedResult result, IEnumerable<ParsedParameter> parameters) : base(name, controllerType)
+    public ParsedEndpoint(string name, MethodInfo methodInfo, TypeInfo controllerType, Uri template, HttpVerb method, ParsedGroup group, ParsedResult result, IEnumerable<ParsedParameter> parameters) : base(name, controllerType)
     {
         MethodInfo = methodInfo;
         Template = template;
         Method = method;
+        Group = group;
         Result = result;
         Parameters = parameters;
+    }
+}
+
+public class ParsedGroup : Resource
+{
+    private ParsedGroup(MethodInfo methodInfo, TypeInfo controllerTypeInfo) : base(GetControllerGroupName(methodInfo, controllerTypeInfo), controllerTypeInfo)
+    {
+    }
+
+    public static ParsedGroup CreateFrom(MethodInfo methodInfo, TypeInfo controllerTypeInfo)
+    {
+        return new ParsedGroup(methodInfo, controllerTypeInfo);
+    }
+
+    private static string GetControllerGroupName(MethodInfo methodInfo, TypeInfo controllerType)
+    {
+        var name = controllerType.GetControllerClassName();
+        var methodApiExplorerSettingAttributeName = methodInfo.GetCustomAttributes<ApiExplorerSettingsAttribute>(true).FirstOrDefault()?.GroupName?.Trim();
+        var controllerApiExplorerSettingAttributeName = controllerType.GetCustomAttributes<ApiExplorerSettingsAttribute>(true).FirstOrDefault()?.GroupName?.Trim();
+
+        if (!string.IsNullOrWhiteSpace(methodApiExplorerSettingAttributeName))
+        {
+            return methodApiExplorerSettingAttributeName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(controllerApiExplorerSettingAttributeName))
+        {
+            return controllerApiExplorerSettingAttributeName;
+        }
+
+        return name;
     }
 }
 
@@ -175,10 +208,12 @@ public class EndpointParser
             var name = ParseName(controllerMethod, controllerTypeInfo);
             var templates = ParseTemplates(controllerMethod, controllerTypeInfo);
             var methods = ParseHttpMethods(controllerMethod);
-            var result = ParsedResult.CreateFrom(controllerMethod, controllerTypeInfo);
             var parameters = ParseParameters(controllerMethod);
 
-            operations.Add(new ParsedEndpoint(name, controllerMethod, controllerTypeInfo, templates, methods, result, parameters));
+            var group = ParsedGroup.CreateFrom(controllerMethod, controllerTypeInfo);
+            var result = ParsedResult.CreateFrom(controllerMethod, controllerTypeInfo);
+
+            operations.Add(new ParsedEndpoint(name, controllerMethod, controllerTypeInfo, templates, methods, group, result, parameters));
         }
 
         return operations;
@@ -205,7 +240,7 @@ public class EndpointParser
             return actionAttributeName;
         }
 
-        return $"{GetControllerName(controllerType)}_{methodInfo.Name}";
+        return $"{controllerType.GetControllerClassName()}_{methodInfo.Name}";
     }
 
     private static Uri ParseTemplates(MethodInfo methodInfo, TypeInfo controllerType)
@@ -238,7 +273,7 @@ public class EndpointParser
 
         if (controllerRouteAttributeTemplate == null && httpAttributeTemplate == null && routeAttributeTemplate == null)
         {
-            return new Uri((GetControllerName(controllerType) + "/" + methodInfo.Name).Trim('/'), UriKind.Relative);
+            return new Uri((controllerType.GetControllerClassName() + "/" + methodInfo.Name).Trim('/'), UriKind.Relative);
         }
 
         throw new InvalidOperationException();
@@ -257,11 +292,6 @@ public class EndpointParser
         }
 
         return new Uri($"{controllerRouteTemplate}/{template}".Trim('/'), UriKind.Relative);
-    }
-
-    private static string GetControllerName(TypeInfo controllerType)
-    {
-        return $"{controllerType.Name.Replace("Controller", string.Empty)}";
     }
 
     private static IEnumerable<ParsedParameter> ParseParameters(MethodInfo methodInfo)
