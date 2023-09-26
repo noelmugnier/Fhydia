@@ -75,7 +75,7 @@ public class ParsedResult : Resource
     }
 }
 
-public class ParsedOperation : Resource
+public class ParsedEndpoint : Resource
 {
     public readonly MethodInfo MethodInfo;
 
@@ -84,7 +84,7 @@ public class ParsedOperation : Resource
     public IEnumerable<ParsedParameter> Parameters { get; }
     public ParsedResult Result { get; }
 
-    public ParsedOperation(string name, MethodInfo methodInfo, TypeInfo controllerType, Uri template, HttpVerb method, ParsedResult result, IEnumerable<ParsedParameter> parameters) : base(name, controllerType)
+    public ParsedEndpoint(string name, MethodInfo methodInfo, TypeInfo controllerType, Uri template, HttpVerb method, ParsedResult result, IEnumerable<ParsedParameter> parameters) : base(name, controllerType)
     {
         MethodInfo = methodInfo;
         Template = template;
@@ -139,31 +139,46 @@ public class ParsedParameter : Resource
     public BindingSource? BindingSource { get; }
 }
 
-public class Processor
+public class EndpointParser
 {
-    public IEnumerable<ParsedOperation> ParseController(TypeInfo controllerType)
+    public IEnumerable<ParsedEndpoint> ParseControllerEndpoints(Type controllerType)
     {
-        var operations = new List<ParsedOperation>();
-        if (controllerType.IsAbstract)
+        return ParseControllerEndpoints(controllerType.GetTypeInfo());
+    }
+
+    public IEnumerable<ParsedEndpoint> ParseControllerEndpoints<TController>() where TController : Controller
+    {
+        return ParseControllerEndpoints(typeof(TController).GetTypeInfo());
+    }
+
+    public IEnumerable<ParsedEndpoint> ParseControllerOperationEndpoints<TController>(string operationName) where TController : Controller
+    {
+        return ParseControllerEndpoints(typeof(TController).GetTypeInfo()).Where(c => c.MethodInfo.Name == operationName);
+    }
+
+    public IEnumerable<ParsedEndpoint> ParseControllerEndpoints(TypeInfo controllerTypeInfo)
+    {
+        var operations = new List<ParsedEndpoint>();
+        if (controllerTypeInfo.IsAbstract)
         {
             return operations;
         }
 
-        var controllerMethods = controllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).ToList();
-        if (controllerType.BaseType != typeof(Controller) && controllerType.BaseType != typeof(ControllerBase))
+        var controllerMethods = controllerTypeInfo.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).ToList();
+        if (controllerTypeInfo.BaseType != typeof(Controller) && controllerTypeInfo.BaseType != typeof(ControllerBase))
         {
-            controllerMethods.AddRange(controllerType.BaseType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly));
+            controllerMethods.AddRange(controllerTypeInfo.BaseType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly));
         }
 
         foreach (var controllerMethod in controllerMethods)
         {
-            var name = ParseName(controllerMethod, controllerType);
-            var templates = ParseTemplates(controllerMethod, controllerType);
+            var name = ParseName(controllerMethod, controllerTypeInfo);
+            var templates = ParseTemplates(controllerMethod, controllerTypeInfo);
             var methods = ParseHttpMethods(controllerMethod);
-            var result = ParsedResult.CreateFrom(controllerMethod, controllerType);
+            var result = ParsedResult.CreateFrom(controllerMethod, controllerTypeInfo);
             var parameters = ParseParameters(controllerMethod);
 
-            operations.Add(new ParsedOperation(name, controllerMethod, controllerType, templates, methods, result, parameters));
+            operations.Add(new ParsedEndpoint(name, controllerMethod, controllerTypeInfo, templates, methods, result, parameters));
         }
 
         return operations;

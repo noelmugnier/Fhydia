@@ -1,4 +1,3 @@
-using System.Reflection;
 using Fhydia.Sample;
 using Microsoft.AspNetCore.Mvc;
 using NFluent;
@@ -10,31 +9,27 @@ public class HyperMediaProcessorTemplateControllerWithRouteAttributeTests
     [Fact]
     public void ShouldThrowExceptionForMethodWithNoAttributes()
     {
-        var processor = new Processor();
-        Assert.Throws<InvalidOperationException>(() => processor.ParseController(typeof(WithRouteErrorController).GetTypeInfo()));
+        Assert.Throws<InvalidOperationException>(() => new EndpointParser().ParseControllerEndpoints<WithRouteErrorController>());
     }
 
     [Fact]
     public void ShouldReturnMappingWithControllerRouteAndMethodFromHttpAttribute()
     {
-        var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(WithRouteController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(WithRouteController.MethodWithHttpAttributeNonEmpty));
+        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithRouteController>(nameof(WithRouteController.MethodWithHttpAttributeNonEmpty)).First();
         Check.That(parsedOperation.Template.ToString()).IsEqualTo("Test/HttpRouteOnly");
     }
 
     [Fact]
     public void ShouldReturnMappingWithMethodHttpAttributeTemplateOnly()
     {
-        var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(WithRouteController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(WithRouteController.MethodWithHttpAttributeStartingWithSlash));
+        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithRouteController>(nameof(WithRouteController.MethodWithHttpAttributeStartingWithSlash)).First();
         Check.That(parsedOperation.Template.ToString()).IsEqualTo("RootUrl");
     }
 
     [Fact]
     public void ShouldReturnMappingWithMethodRouteAttributeTemplateOnly()
     {
-        var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(WithRouteController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(WithRouteController.MethodWithRouteAttributeStartingWithSlash));
+        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithRouteController>(nameof(WithRouteController.MethodWithRouteAttributeStartingWithSlash)).First();
         Check.That(parsedOperation.Template.ToString()).IsEqualTo("RouteUrl");
     }
 }

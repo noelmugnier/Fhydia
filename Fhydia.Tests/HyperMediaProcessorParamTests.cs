@@ -1,8 +1,6 @@
-using System.Reflection;
 using Fhydia.Sample;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.OpenApi.Extensions;
 using NFluent;
 
 namespace Fhydia.Tests;
@@ -12,59 +10,43 @@ public class HyperMediaProcessorParamTests
     [Fact]
     public void ShouldParseParams()
     {
-        var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ParamsController.MethodWithParams));
-        Check.That(parsedOperation.Parameters).HasSize(2);
+        var parsedParameters = new EndpointParser().ParseControllerOperationEndpoints<ParamsController>(nameof(ParamsController.MethodWithParams)).First();
+        Check.That(parsedParameters.Parameters).HasSize(2);
     }
 
     [Fact]
     public void ShouldParseParamsBindingSourceAsQuery()
     {
-        var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ParamsController.MethodWithParamsFromQuery));
-
-        var param = parsedOperation.Parameters.FirstOrDefault();
-        Check.That(param.BindingSource).IsEqualTo(BindingSource.Query);
+        var parsedParam = new EndpointParser().ParseControllerOperationEndpoints<ParamsController>(nameof(ParamsController.MethodWithParamsFromQuery)).First().Parameters.First();
+        Check.That(parsedParam.BindingSource).IsEqualTo(BindingSource.Query);
     }
 
     [Fact]
     public void ShouldParseParamsBindingSourceAsPath()
     {
-        var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ParamsController.MethodWithParamsFromRoute));
-
-        var param = parsedOperation.Parameters.FirstOrDefault();
-        Check.That(param.BindingSource).IsEqualTo(BindingSource.Path);
+        var parsedParam = new EndpointParser().ParseControllerOperationEndpoints<ParamsController>(nameof(ParamsController.MethodWithParamsFromRoute)).First().Parameters.First();
+        Check.That(parsedParam.BindingSource).IsEqualTo(BindingSource.Path);
     }
 
     [Fact]
     public void ShouldParseParamsBindingSourceAsBody()
     {
-        var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ParamsController.MethodWithParamsFromBody));
-
-        var param = parsedOperation.Parameters.FirstOrDefault();
-        Check.That(param.BindingSource).IsEqualTo(BindingSource.Body);
+        var parsedParam = new EndpointParser().ParseControllerOperationEndpoints<ParamsController>(nameof(ParamsController.MethodWithParamsFromBody)).First().Parameters.First();
+        Check.That(parsedParam.BindingSource).IsEqualTo(BindingSource.Body);
     }
 
     [Fact]
     public void ShouldParseParamsBindingSourceAsHeader()
     {
-        var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ParamsController.MethodWithParamsFromHeaders));
-
-        var param = parsedOperation.Parameters.FirstOrDefault();
-        Check.That(param.BindingSource).IsEqualTo(BindingSource.Header);
+        var parsedParam = new EndpointParser().ParseControllerOperationEndpoints<ParamsController>(nameof(ParamsController.MethodWithParamsFromHeaders)).First().Parameters.First();
+        Check.That(parsedParam.BindingSource).IsEqualTo(BindingSource.Header);
     }
 
     [Fact]
     public void ShouldParseParamsBindingSourceAsForm()
     {
-        var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ParamsController.MethodWithParamsFromForm));
-
-        var param = parsedOperation.Parameters.FirstOrDefault();
-        Check.That(param.BindingSource).IsEqualTo(BindingSource.Form);
+        var parsedParam = new EndpointParser().ParseControllerOperationEndpoints<ParamsController>(nameof(ParamsController.MethodWithParamsFromForm)).First().Parameters.First();
+        Check.That(parsedParam.BindingSource).IsEqualTo(BindingSource.Form);
     }
 }
 

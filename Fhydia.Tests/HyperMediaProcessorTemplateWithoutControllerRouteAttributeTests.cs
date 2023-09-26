@@ -1,4 +1,3 @@
-using System.Reflection;
 using Fhydia.Sample;
 using Microsoft.AspNetCore.Mvc;
 using NFluent;
@@ -10,48 +9,35 @@ public class HyperMediaProcessorTemplateWithoutControllerRouteAttributeTests
     [Fact]
     public void ShouldReturnControllerNameConcatenatedWithMethodNameWhenNoAttribute()
     {
-        var processor = new Processor();
-        var parsedOperations = processor.ParseController(typeof(WithoutRouteController).GetTypeInfo());
-        var operation = parsedOperations.FirstOrDefault(c => c.MethodInfo.Name == nameof(WithoutRouteController.MethodWithoutAttributes));
-
-        Check.That(operation.Template.ToString()).IsEqualTo("WithoutRoute/MethodWithoutAttributes");
+        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithoutRouteController>(nameof(WithoutRouteController.MethodWithoutAttributes)).First();
+        Check.That(parsedOperation.Template.ToString()).IsEqualTo("WithoutRoute/MethodWithoutAttributes");
     }
 
     [Fact]
     public void ShouldReturnControllerNameConcatenatedWithMethodNameWhenUsingHttpAttributeWithNoTemplate()
     {
-        var processor = new Processor();
-        var parsedOperations = processor.ParseController(typeof(WithoutRouteController).GetTypeInfo());
-        var operation = parsedOperations.FirstOrDefault(c => c.MethodInfo.Name == nameof(WithoutRouteController.MethodWithHttpAttribute));
-
-        Check.That(operation.Template.ToString()).IsEqualTo("WithoutRoute/MethodWithHttpAttribute");
+        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithoutRouteController>(nameof(WithoutRouteController.MethodWithHttpAttribute)).First();
+        Check.That(parsedOperation.Template.ToString()).IsEqualTo("WithoutRoute/MethodWithHttpAttribute");
     }
 
     [Fact]
     public void ShouldReturnEmptyRouteWhenUsingHttpAttributeWithEmptyTemplate()
     {
-        var processor = new Processor();
-        var parsedOperations = processor.ParseController(typeof(WithoutRouteController).GetTypeInfo());
-        var operation = parsedOperations.FirstOrDefault(c => c.MethodInfo.Name == nameof(WithoutRouteController.MethodWithHttpAttributeEmpty));
-
-        Check.That(operation.Template.ToString()).IsEqualTo("");
+        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithoutRouteController>(nameof(WithoutRouteController.MethodWithHttpAttributeEmpty)).First();
+        Check.That(parsedOperation.Template.ToString()).IsEqualTo("");
     }
 
     [Fact]
     public void ShouldReturnNonEmptyRouteWhenUsingHttpAttributeWithTemplate()
     {
-        var processor = new Processor();
-        var parsedOperations = processor.ParseController(typeof(WithoutRouteController).GetTypeInfo());
-        var operation = parsedOperations.FirstOrDefault(c => c.MethodInfo.Name == nameof(WithoutRouteController.MethodWithHttpAttributeNonEmpty));
-
-        Check.That(operation.Template.ToString()).IsEqualTo("HttpRouteNonEmpty");
+        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithoutRouteController>(nameof(WithoutRouteController.MethodWithHttpAttributeNonEmpty)).First();
+        Check.That(parsedOperation.Template.ToString()).IsEqualTo("HttpRouteNonEmpty");
     }
 
     [Fact]
     public void ShouldThrowExceptionWhenHttpAttributeTemplateAndRouteTemplateUsedOnSameMethod()
     {
-        var processor = new Processor();
-        Assert.Throws<InvalidOperationException>(() => processor.ParseController(typeof(ErrorController).GetTypeInfo()));
+        Assert.Throws<InvalidOperationException>(() => new EndpointParser().ParseControllerEndpoints<ErrorController>());
     }
 }
 
