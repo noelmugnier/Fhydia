@@ -200,7 +200,7 @@ public class EndpointParser
     public IEnumerable<ParsedEndpoint> ParseControllerEndpoints(TypeInfo controllerTypeInfo)
     {
         var operations = new List<ParsedEndpoint>();
-        if (controllerTypeInfo.IsAbstract)
+        if (controllerTypeInfo.IsAbstract || controllerTypeInfo.GetCustomAttribute<NonControllerAttribute>() != null)
         {
             return operations;
         }
@@ -213,6 +213,11 @@ public class EndpointParser
 
         foreach (var controllerMethod in controllerMethods)
         {
+            if (controllerMethod.GetCustomAttribute<NonActionAttribute>() != null)
+            {
+                continue;
+            }
+
             var name = ParseName(controllerMethod, controllerTypeInfo);
             var templates = ParseTemplates(controllerMethod, controllerTypeInfo);
             var methods = ParseHttpMethods(controllerMethod);
