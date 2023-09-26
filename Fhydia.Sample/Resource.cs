@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -17,7 +18,7 @@ public abstract class Resource
         TypeInfo = relatedType;
     }
 
-    public string? Description { get; }
+    public string? Description { get; protected set; }
     public string Name { get; }
     public string DisplayName { get; }
     public TypeInfo TypeInfo { get; }
@@ -30,6 +31,7 @@ public class ParsedResult : Resource
     private ParsedResult(string name, Type type) : base(name, type)
     {
         Properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Select(p => new ParsedProperty(p));
+        Description = type.GetTypeDescription();
     }
 
     public static ParsedResult CreateFrom(MethodInfo methodInfo, TypeInfo controllerType)
@@ -93,6 +95,7 @@ public class ParsedEndpoint : Resource
         Group = group;
         Result = result;
         Parameters = parameters;
+        Description = methodInfo.GetTypeDescription();
     }
 }
 
@@ -104,12 +107,15 @@ public class ParsedGroup : Resource
 
     public static ParsedGroup CreateFrom(MethodInfo methodInfo, TypeInfo controllerTypeInfo)
     {
-        return new ParsedGroup(methodInfo, controllerTypeInfo);
+        return new ParsedGroup(methodInfo, controllerTypeInfo)
+        {
+            Description = controllerTypeInfo.GetTypeDescription()
+        };
     }
 
     private static string GetControllerGroupName(MethodInfo methodInfo, TypeInfo controllerType)
     {
-        var name = controllerType.GetControllerClassName();
+        var controllerName = controllerType.GetControllerClassName();
         var methodApiExplorerSettingAttributeName = methodInfo.GetCustomAttributes<ApiExplorerSettingsAttribute>(true).FirstOrDefault()?.GroupName?.Trim();
         var controllerApiExplorerSettingAttributeName = controllerType.GetCustomAttributes<ApiExplorerSettingsAttribute>(true).FirstOrDefault()?.GroupName?.Trim();
 
@@ -123,7 +129,7 @@ public class ParsedGroup : Resource
             return controllerApiExplorerSettingAttributeName;
         }
 
-        return name;
+        return controllerName;
     }
 }
 
@@ -134,6 +140,7 @@ public class ParsedProperty : Resource
     public ParsedProperty(PropertyInfo propertyInfo) : base(propertyInfo.Name, propertyInfo.PropertyType)
     {
         PropertyInfo = propertyInfo;
+        Description = propertyInfo.GetTypeDescription();
     }
 }
 
@@ -145,6 +152,7 @@ public class ParsedParameter : Resource
     {
         ParameterInfo = parameterInfo;
         BindingSource = ParseParameterAttribute(parameterInfo);
+        Description = parameterInfo.GetTypeDescription();
     }
 
     private BindingSource? ParseParameterAttribute(ParameterInfo parameterInfo)
