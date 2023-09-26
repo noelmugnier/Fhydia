@@ -12,7 +12,7 @@ public class HyperMediaProcessorTemplateWithoutControllerRouteAttributeTests
     {
         var processor = new Processor();
         var parsedOperations = processor.ParseController(typeof(WithoutRouteController).GetTypeInfo());
-        var operation = parsedOperations.FirstOrDefault(c => c.MethodName == nameof(WithoutRouteController.MethodWithoutAttributes));
+        var operation = parsedOperations.FirstOrDefault(c => c.MethodInfo.Name == nameof(WithoutRouteController.MethodWithoutAttributes));
 
         Check.That(operation.Template.ToString()).IsEqualTo("WithoutRoute/MethodWithoutAttributes");
     }
@@ -22,7 +22,7 @@ public class HyperMediaProcessorTemplateWithoutControllerRouteAttributeTests
     {
         var processor = new Processor();
         var parsedOperations = processor.ParseController(typeof(WithoutRouteController).GetTypeInfo());
-        var operation = parsedOperations.FirstOrDefault(c => c.MethodName == nameof(WithoutRouteController.MethodWithHttpAttribute));
+        var operation = parsedOperations.FirstOrDefault(c => c.MethodInfo.Name == nameof(WithoutRouteController.MethodWithHttpAttribute));
 
         Check.That(operation.Template.ToString()).IsEqualTo("WithoutRoute/MethodWithHttpAttribute");
     }
@@ -32,7 +32,7 @@ public class HyperMediaProcessorTemplateWithoutControllerRouteAttributeTests
     {
         var processor = new Processor();
         var parsedOperations = processor.ParseController(typeof(WithoutRouteController).GetTypeInfo());
-        var operation = parsedOperations.FirstOrDefault(c => c.MethodName == nameof(WithoutRouteController.MethodWithHttpAttributeEmpty));
+        var operation = parsedOperations.FirstOrDefault(c => c.MethodInfo.Name == nameof(WithoutRouteController.MethodWithHttpAttributeEmpty));
 
         Check.That(operation.Template.ToString()).IsEqualTo("");
     }
@@ -42,7 +42,7 @@ public class HyperMediaProcessorTemplateWithoutControllerRouteAttributeTests
     {
         var processor = new Processor();
         var parsedOperations = processor.ParseController(typeof(WithoutRouteController).GetTypeInfo());
-        var operation = parsedOperations.FirstOrDefault(c => c.MethodName == nameof(WithoutRouteController.MethodWithHttpAttributeNonEmpty));
+        var operation = parsedOperations.FirstOrDefault(c => c.MethodInfo.Name == nameof(WithoutRouteController.MethodWithHttpAttributeNonEmpty));
 
         Check.That(operation.Template.ToString()).IsEqualTo("HttpRouteNonEmpty");
     }

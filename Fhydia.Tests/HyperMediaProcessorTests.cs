@@ -18,7 +18,7 @@ public class HyperMediaProcessorTemplateControllerWithRouteAttributeTests
     public void ShouldReturnMappingWithControllerRouteAndMethodFromHttpAttribute()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(WithRouteController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(WithRouteController.MethodWithHttpAttributeNonEmpty));
+        var parsedOperation = processor.ParseController(typeof(WithRouteController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(WithRouteController.MethodWithHttpAttributeNonEmpty));
         Check.That(parsedOperation.Template.ToString()).IsEqualTo("Test/HttpRouteOnly");
     }
 
@@ -26,7 +26,7 @@ public class HyperMediaProcessorTemplateControllerWithRouteAttributeTests
     public void ShouldReturnMappingWithMethodHttpAttributeTemplateOnly()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(WithRouteController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(WithRouteController.MethodWithHttpAttributeStartingWithSlash));
+        var parsedOperation = processor.ParseController(typeof(WithRouteController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(WithRouteController.MethodWithHttpAttributeStartingWithSlash));
         Check.That(parsedOperation.Template.ToString()).IsEqualTo("RootUrl");
     }
 
@@ -34,7 +34,7 @@ public class HyperMediaProcessorTemplateControllerWithRouteAttributeTests
     public void ShouldReturnMappingWithMethodRouteAttributeTemplateOnly()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(WithRouteController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(WithRouteController.MethodWithRouteAttributeStartingWithSlash));
+        var parsedOperation = processor.ParseController(typeof(WithRouteController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(WithRouteController.MethodWithRouteAttributeStartingWithSlash));
         Check.That(parsedOperation.Template.ToString()).IsEqualTo("RouteUrl");
     }
 }

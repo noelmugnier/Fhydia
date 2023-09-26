@@ -11,7 +11,7 @@ public class HyperMediaProcessorNamingTests
     public void ShouldParseOperationNameAsMethodName()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(NamingController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(NamingController.MethodWithoutName));
+        var parsedOperation = processor.ParseController(typeof(NamingController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(NamingController.MethodWithoutName));
 
         Check.That(parsedOperation.Name).IsEqualTo(nameof(NamingController).Replace("Controller", string.Empty) + "_" + nameof(NamingController.MethodWithoutName));
     }
@@ -20,7 +20,7 @@ public class HyperMediaProcessorNamingTests
     public void ShouldParseOperationNameFromHttpAttributeName()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(NamingController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(NamingController.MethodWithHttpAttributeName));
+        var parsedOperation = processor.ParseController(typeof(NamingController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(NamingController.MethodWithHttpAttributeName));
 
         Check.That(parsedOperation.Name).IsEqualTo("http-name");
     }
@@ -29,7 +29,7 @@ public class HyperMediaProcessorNamingTests
     public void ShouldParseOperationNameFromRouteAttributeName()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(NamingController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(NamingController.MethodWithRouteAttributeName));
+        var parsedOperation = processor.ParseController(typeof(NamingController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(NamingController.MethodWithRouteAttributeName));
 
         Check.That(parsedOperation.Name).IsEqualTo("route-name");
     }
@@ -38,7 +38,7 @@ public class HyperMediaProcessorNamingTests
     public void ShouldParseOperationNameFromActionName()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(NamingController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(NamingController.MethodWithActionNameAttribute));
+        var parsedOperation = processor.ParseController(typeof(NamingController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(NamingController.MethodWithActionNameAttribute));
 
         Check.That(parsedOperation.Name).IsEqualTo("action-name");
     }

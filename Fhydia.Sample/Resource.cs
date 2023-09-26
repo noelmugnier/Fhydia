@@ -7,35 +7,38 @@ namespace Fhydia.Sample;
 
 public abstract class Resource
 {
-    protected Resource(string name, Type relatedType)
+    protected Resource(string name, Type relatedType) : this(name, relatedType.GetTypeInfo())
+    {
+    }
+
+    protected Resource(string name, TypeInfo relatedType)
     {
         Name = name;
-        RelatedType = relatedType;
+        TypeInfo = relatedType;
     }
 
     public string? Description { get; }
     public string Name { get; }
     public string DisplayName { get; }
-    public Type RelatedType { get; }
+    public TypeInfo TypeInfo { get; }
 }
 
-public class Result : Resource
+public class ParsedResult : Resource
 {
-    public readonly TypeInfo TypeInfo;
+    public IEnumerable<ParsedProperty> Properties { get; }
 
-    private Result(TypeInfo typeInfo, string name) : base(name, typeInfo.AsType())
+    private ParsedResult(string name, Type type) : base(name, type)
     {
-        Properties = typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Select(p => new Property(p));
-        TypeInfo = typeInfo;
+        Properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Select(p => new ParsedProperty(p));
     }
 
-    public static Result CreateFrom(MethodInfo methodInfo, TypeInfo controllerType)
+    public static ParsedResult CreateFrom(MethodInfo methodInfo, TypeInfo controllerType)
     {
         var returnedType = methodInfo.ReturnType;
 
         if (returnedType.IsGenericType)
         {
-            returnedType = GetGenericInnerType(returnedType);
+            returnedType = RecursivelyFindComplexOrSimpleType(returnedType);
         }
 
         if (returnedType == typeof(ActionResult) && !returnedType.IsGenericType)
@@ -51,168 +54,61 @@ public class Result : Resource
             }
         }
 
-        return new Result(returnedType.GetTypeInfo(), returnedType.Name);
+        return new ParsedResult(returnedType.Name, returnedType);
     }
 
-    public IEnumerable<Property> Properties { get; }
-
-    private static Type GetGenericInnerType(Type innerType)
+    private static Type RecursivelyFindComplexOrSimpleType(Type type)
     {
-        if (!innerType.IsGenericType)
+        if (!type.IsGenericType)
         {
-            return innerType;
+            return type;
         }
 
-        var returnedType = innerType;
+        var returnedType = type;
         var genericReturnedType = returnedType.GetGenericTypeDefinition();
         if (returnedType.IsGenericType && (genericReturnedType == typeof(ActionResult<>) || genericReturnedType == typeof(Task<>) || genericReturnedType == typeof(ValueTask<>)))
         {
-            returnedType = GetGenericInnerType(returnedType.GenericTypeArguments[0]);
+            returnedType = RecursivelyFindComplexOrSimpleType(returnedType.GenericTypeArguments[0]);
         }
 
         return returnedType;
     }
 }
 
-public class Operation : Resource
+public class ParsedOperation : Resource
 {
-    private readonly MethodInfo _methodInfo;
-
-    private Operation(MethodInfo methodInfo, TypeInfo controllerType) : base(ParseName(methodInfo, controllerType), controllerType)
-    {
-        _methodInfo = methodInfo;
-        Template = ParseTemplate(methodInfo, controllerType);
-        Method = ParseHttpMethod(methodInfo);
-        Result = Result.CreateFrom(methodInfo, controllerType);
-        Parameters = ParseParameters(methodInfo);
-    }
-
-    private static string ParseName(MethodInfo methodInfo, TypeInfo controllerType)
-    {
-        var httpMethodAttribute = methodInfo.GetCustomAttributes<HttpMethodAttribute>(true).FirstOrDefault();
-        var routeAttribute = methodInfo.GetCustomAttributes<RouteAttribute>(true).FirstOrDefault();
-        var actionNameAttribute = methodInfo.GetCustomAttributes<ActionNameAttribute>(true).FirstOrDefault();
-
-        var httpMethodRoute = httpMethodAttribute?.Name?.Trim();
-        var routeTemplate = routeAttribute?.Name?.Trim();
-        var actionName = actionNameAttribute?.Name?.Trim();
-
-        if (!string.IsNullOrWhiteSpace(httpMethodRoute))
-        {
-            return httpMethodRoute;
-        }
-
-        if (!string.IsNullOrWhiteSpace(routeTemplate))
-        {
-            return routeTemplate;
-        }
-
-        if (!string.IsNullOrWhiteSpace(actionName))
-        {
-            return actionName;
-        }
-
-        return $"{GetConventionControllerRoute(controllerType)}_{methodInfo.Name}";
-    }
-
-    private static Uri? ParseTemplate(MethodInfo methodInfo, TypeInfo controllerType)
-    {
-        var httpMethodAttribute = methodInfo.GetCustomAttributes<HttpMethodAttribute>(true).FirstOrDefault();
-        var routeAttribute = methodInfo.GetCustomAttributes<RouteAttribute>(true).FirstOrDefault();
-
-        var httpMethodRoute = httpMethodAttribute?.Template?.Trim();
-        var routeTemplate = routeAttribute?.Template?.Trim();
-        var controllerRouteAttribute = controllerType.GetCustomAttributes<RouteAttribute>(true).FirstOrDefault();
-
-        if (httpMethodRoute != null && routeTemplate != null)
-        {
-            throw new InvalidOperationException($"Cannot have HttpAttribute template '{httpMethodRoute}' and RouteAttribute template '{routeTemplate}' on Method: {methodInfo.Name} for Controller {controllerType.Name}");
-        }
-
-        if (controllerRouteAttribute != null && httpMethodRoute == null && routeTemplate == null)
-        {
-            throw new InvalidOperationException($"Cannot have Method {methodInfo.Name} without HttpAttribute or RouteAttribute template for Controller {controllerType.Name}");
-        }
-
-        if (httpMethodRoute != null)
-        {
-            if (httpMethodRoute.StartsWith("~/") || httpMethodRoute.StartsWith("/"))
-            {
-                return new Uri(httpMethodRoute.TrimStart('~').Trim('/'), UriKind.Relative);
-            }
-
-            return new Uri($"{controllerRouteAttribute?.Template}/{httpMethodRoute}".Trim('/'), UriKind.Relative);
-        }
-
-        if (routeTemplate != null)
-        {
-            if (routeTemplate.StartsWith("~/") || routeTemplate.StartsWith("/"))
-            {
-                return new Uri(routeTemplate.TrimStart('~').Trim('/'), UriKind.Relative);
-            }
-
-            return new Uri($"{controllerRouteAttribute?.Template}/{routeTemplate}".Trim('/'), UriKind.Relative);
-        }
-
-        if (controllerRouteAttribute == null && httpMethodRoute == null && routeTemplate == null)
-        {
-            return new Uri((GetConventionControllerRoute(controllerType) + "/" + methodInfo.Name).Trim('/'), UriKind.Relative);
-        }
-
-        throw new InvalidOperationException();
-    }
-
-    private static string GetConventionControllerRoute(TypeInfo controllerType)
-    {
-        return $"{controllerType.Name.Replace("Controller", string.Empty)}";
-    }
-
-    private static IEnumerable<Parameter> ParseParameters(MethodInfo methodInfo)
-    {
-        var parameters = new List<Parameter>();
-        methodInfo.GetParameters().ToList().ForEach(p => parameters.Add(new Parameter(p)));
-        return parameters;
-    }
-
-    private static HttpVerb ParseHttpMethod(MethodInfo methodInfo)
-    {
-        var httpMethodAttribute = methodInfo.GetCustomAttributes<HttpMethodAttribute>(true).FirstOrDefault();
-        if (httpMethodAttribute == null)
-        {
-            return HttpVerb.GET;
-        }
-
-        var httpMethod = httpMethodAttribute.HttpMethods.FirstOrDefault();
-        return Enum.Parse<HttpVerb>(httpMethod);
-    }
-
-    public static Operation CreateFrom(MethodInfo methodInfo, TypeInfo controllerType)
-    {
-        return new Operation(methodInfo, controllerType);
-    }
+    public readonly MethodInfo MethodInfo;
 
     public Uri Template { get; }
     public HttpVerb Method { get; }
-    public IEnumerable<Parameter> Parameters { get; }
-    public Result Result { get; }
-    public string MethodName => _methodInfo.Name;
+    public IEnumerable<ParsedParameter> Parameters { get; }
+    public ParsedResult Result { get; }
+
+    public ParsedOperation(string name, MethodInfo methodInfo, TypeInfo controllerType, Uri template, HttpVerb method, ParsedResult result, IEnumerable<ParsedParameter> parameters) : base(name, controllerType)
+    {
+        MethodInfo = methodInfo;
+        Template = template;
+        Method = method;
+        Result = result;
+        Parameters = parameters;
+    }
 }
 
-public class Property : Resource
+public class ParsedProperty : Resource
 {
     public readonly PropertyInfo PropertyInfo;
 
-    public Property(PropertyInfo propertyInfo) : base(propertyInfo.Name, propertyInfo.PropertyType)
+    public ParsedProperty(PropertyInfo propertyInfo) : base(propertyInfo.Name, propertyInfo.PropertyType)
     {
         PropertyInfo = propertyInfo;
     }
 }
 
-public class Parameter : Resource
+public class ParsedParameter : Resource
 {
     public readonly ParameterInfo ParameterInfo;
 
-    public Parameter(ParameterInfo parameterInfo) : base(parameterInfo.Name, parameterInfo.ParameterType)
+    public ParsedParameter(ParameterInfo parameterInfo) : base(parameterInfo.Name, parameterInfo.ParameterType)
     {
         ParameterInfo = parameterInfo;
         BindingSource = ParseParameterAttribute(parameterInfo);
@@ -243,23 +139,132 @@ public class Parameter : Resource
     public BindingSource? BindingSource { get; }
 }
 
-public class ParsedHypermedia
-{
-    public IEnumerable<Result> Results { get; set; }
-    public IEnumerable<Operation> Operations { get; set; }
-}
-
 public class Processor
 {
-    public IEnumerable<Operation> ParseController(TypeInfo controllerType)
+    public IEnumerable<ParsedOperation> ParseController(TypeInfo controllerType)
     {
-        var operations = new List<Operation>();
-        var methods = controllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
-        foreach (var method in methods)
+        var operations = new List<ParsedOperation>();
+        if (controllerType.IsAbstract)
         {
-            var operation = Operation.CreateFrom(method, controllerType);
-            operations.Add(operation);
+            return operations;
         }
+
+        var controllerMethods = controllerType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).ToList();
+        if (controllerType.BaseType != typeof(Controller) && controllerType.BaseType != typeof(ControllerBase))
+        {
+            controllerMethods.AddRange(controllerType.BaseType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly));
+        }
+
+        foreach (var controllerMethod in controllerMethods)
+        {
+            var name = ParseName(controllerMethod, controllerType);
+            var templates = ParseTemplates(controllerMethod, controllerType);
+            var methods = ParseHttpMethods(controllerMethod);
+            var result = ParsedResult.CreateFrom(controllerMethod, controllerType);
+            var parameters = ParseParameters(controllerMethod);
+
+            operations.Add(new ParsedOperation(name, controllerMethod, controllerType, templates, methods, result, parameters));
+        }
+
         return operations;
+    }
+
+    private static string ParseName(MethodInfo methodInfo, TypeInfo controllerType)
+    {
+        var httpAttributeName = methodInfo.GetCustomAttributes<HttpMethodAttribute>(true).FirstOrDefault()?.Name?.Trim();
+        var routeAttributeName = methodInfo.GetCustomAttributes<RouteAttribute>(true).FirstOrDefault()?.Name?.Trim();
+        var actionAttributeName = methodInfo.GetCustomAttributes<ActionNameAttribute>(true).FirstOrDefault()?.Name?.Trim();
+
+        if (!string.IsNullOrWhiteSpace(httpAttributeName))
+        {
+            return httpAttributeName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(routeAttributeName))
+        {
+            return routeAttributeName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(actionAttributeName))
+        {
+            return actionAttributeName;
+        }
+
+        return $"{GetControllerName(controllerType)}_{methodInfo.Name}";
+    }
+
+    private static Uri ParseTemplates(MethodInfo methodInfo, TypeInfo controllerType)
+    {
+        var httpAttributeTemplate = methodInfo.GetCustomAttributes<HttpMethodAttribute>(true).FirstOrDefault()?.Template?.Trim();
+        var routeAttributeTemplate = methodInfo.GetCustomAttributes<RouteAttribute>(true).FirstOrDefault()?.Template?.Trim();
+        var controllerRouteAttributeTemplate = controllerType.GetCustomAttributes<RouteAttribute>(true).FirstOrDefault()?.Template?.Trim();
+
+        if (httpAttributeTemplate != null && routeAttributeTemplate != null)
+        {
+            throw new InvalidOperationException($"Cannot have HttpAttribute template '{httpAttributeTemplate}' and RouteAttribute template '{routeAttributeTemplate}' on Method '{methodInfo.Name}' for Controller '{controllerType.Name}'");
+        }
+
+        if (controllerRouteAttributeTemplate != null && httpAttributeTemplate == null && routeAttributeTemplate == null)
+        {
+            throw new InvalidOperationException($"Cannot have Method '{methodInfo.Name}' without HttpAttribute or RouteAttribute template for Controller '{controllerType.Name}' when using RouteAttribute on Controller");
+        }
+
+        var templateUri = GetTemplateUri(httpAttributeTemplate, controllerRouteAttributeTemplate);
+        if (templateUri != null)
+        {
+            return templateUri;
+        }
+
+        templateUri = GetTemplateUri(routeAttributeTemplate, controllerRouteAttributeTemplate);
+        if (templateUri != null)
+        {
+            return templateUri;
+        }
+
+        if (controllerRouteAttributeTemplate == null && httpAttributeTemplate == null && routeAttributeTemplate == null)
+        {
+            return new Uri((GetControllerName(controllerType) + "/" + methodInfo.Name).Trim('/'), UriKind.Relative);
+        }
+
+        throw new InvalidOperationException();
+    }
+
+    private static Uri? GetTemplateUri(string template, string controllerRouteTemplate)
+    {
+        if (template == null)
+        {
+            return null;
+        }
+
+        if (template.StartsWith("~/") || template.StartsWith("/"))
+        {
+            return new Uri(template.TrimStart('~').Trim('/'), UriKind.Relative);
+        }
+
+        return new Uri($"{controllerRouteTemplate}/{template}".Trim('/'), UriKind.Relative);
+    }
+
+    private static string GetControllerName(TypeInfo controllerType)
+    {
+        return $"{controllerType.Name.Replace("Controller", string.Empty)}";
+    }
+
+    private static IEnumerable<ParsedParameter> ParseParameters(MethodInfo methodInfo)
+    {
+        var parameters = new List<ParsedParameter>();
+        methodInfo.GetParameters().ToList().ForEach(p => parameters.Add(new ParsedParameter(p)));
+        return parameters;
+    }
+
+    private static HttpVerb ParseHttpMethods(MethodInfo methodInfo)
+    {
+        var httpMethodAttribute = methodInfo.GetCustomAttributes<HttpMethodAttribute>(true).FirstOrDefault();
+        if (httpMethodAttribute == null)
+        {
+            return HttpVerb.GET;
+        }
+
+        var httpMethod = httpMethodAttribute.HttpMethods.FirstOrDefault();
+        return Enum.Parse<HttpVerb>(httpMethod);
     }
 }

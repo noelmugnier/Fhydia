@@ -13,34 +13,34 @@ public class HyperMediaProcessorReturnTests
         var processor = new Processor();
         var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault();
 
-        Check.That(parsedOperation.RelatedType).IsEqualTo(typeof(ReturnController));
+        Check.That(parsedOperation.TypeInfo.AsType()).IsEqualTo(typeof(ReturnController));
     }
 
     [Fact]
     public void ShouldAssignOperationReturnTypeWhenUsingSimpleType()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(ReturnController.MethodWithReturnType));
+        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ReturnController.MethodWithReturnType));
 
-        Check.That(parsedOperation.Result.RelatedType).IsEqualTo(typeof(MyReturnType));
+        Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
     public void ShouldAssignOperationReturnInnerTypeWhenUsingActionResultTyped()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(ReturnController.MethodWithActionResultTyped));
+        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ReturnController.MethodWithActionResultTyped));
 
-        Check.That(parsedOperation.Result.RelatedType).IsEqualTo(typeof(MyReturnType));
+        Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
     public void ShouldAssignOperationReturnGenericTypeWhenNotUsingActionResult()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(ReturnController.MethodWithGenericTypeReturnType));
+        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ReturnController.MethodWithGenericTypeReturnType));
 
-        Check.That(parsedOperation.Result.RelatedType).IsEqualTo(typeof(GenericType<MyReturnType>));
+        Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(GenericType<MyReturnType>));
     }
 
     [Fact]
@@ -54,33 +54,33 @@ public class HyperMediaProcessorReturnTests
     public void ShouldAssignReturnedTypeFromProducesResponseTypeAttribute()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(ReturnController.MethodWithActionResultWithProducesResponseTypeAttribute));
+        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ReturnController.MethodWithActionResultWithProducesResponseTypeAttribute));
 
-        Check.That(parsedOperation.Result.RelatedType).IsEqualTo(typeof(MyReturnType));
+        Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
     public void ShouldAssignReturnedTypeFromTaskInnerType()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(ReturnController.MethodWithTaskReturnType));
-        Check.That(parsedOperation.Result.RelatedType).IsEqualTo(typeof(MyReturnType));
+        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ReturnController.MethodWithTaskReturnType));
+        Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
     public void ShouldAssignReturnedTypeFromValueTaskInnerType()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(ReturnController.MethodWithValueTaskReturnType));
-        Check.That(parsedOperation.Result.RelatedType).IsEqualTo(typeof(MyReturnType));
+        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ReturnController.MethodWithValueTaskReturnType));
+        Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
     public void ShouldAssignReturnedTypeFromTaskActionResultInnerType()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(ReturnController.MethodWithTaskActionResultGenericTyped));
-        Check.That(parsedOperation.Result.RelatedType).IsEqualTo(typeof(GenericType<MyReturnType>));
+        var parsedOperation = processor.ParseController(typeof(ReturnController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ReturnController.MethodWithTaskActionResultGenericTyped));
+        Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(GenericType<MyReturnType>));
     }
 }
 

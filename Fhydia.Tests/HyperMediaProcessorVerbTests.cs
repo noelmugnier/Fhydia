@@ -11,7 +11,7 @@ public class HyperMediaProcessorVerbTests
     public void ShouldParseOperationHttpVerbWithGetAsDefaultVerb()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(VerbController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(VerbController.MethodWithoutVerb));
+        var parsedOperation = processor.ParseController(typeof(VerbController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(VerbController.MethodWithoutVerb));
 
         Check.That(parsedOperation.Method).IsEqualTo(HttpVerb.GET);
     }
@@ -20,7 +20,7 @@ public class HyperMediaProcessorVerbTests
     public void ShouldParseOperationHttpPostVerb()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(VerbController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(VerbController.MethodWithHttpGetVerb));
+        var parsedOperation = processor.ParseController(typeof(VerbController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(VerbController.MethodWithHttpGetVerb));
 
         Check.That(parsedOperation.Method).IsEqualTo(HttpVerb.POST);
     }

@@ -13,7 +13,7 @@ public class HyperMediaProcessorParamTests
     public void ShouldParseParams()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(ParamsController.MethodWithParams));
+        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ParamsController.MethodWithParams));
         Check.That(parsedOperation.Parameters).HasSize(2);
     }
 
@@ -21,7 +21,7 @@ public class HyperMediaProcessorParamTests
     public void ShouldParseParamsBindingSourceAsQuery()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(ParamsController.MethodWithParamsFromQuery));
+        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ParamsController.MethodWithParamsFromQuery));
 
         var param = parsedOperation.Parameters.FirstOrDefault();
         Check.That(param.BindingSource).IsEqualTo(BindingSource.Query);
@@ -31,7 +31,7 @@ public class HyperMediaProcessorParamTests
     public void ShouldParseParamsBindingSourceAsPath()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(ParamsController.MethodWithParamsFromRoute));
+        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ParamsController.MethodWithParamsFromRoute));
 
         var param = parsedOperation.Parameters.FirstOrDefault();
         Check.That(param.BindingSource).IsEqualTo(BindingSource.Path);
@@ -41,7 +41,7 @@ public class HyperMediaProcessorParamTests
     public void ShouldParseParamsBindingSourceAsBody()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(ParamsController.MethodWithParamsFromBody));
+        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ParamsController.MethodWithParamsFromBody));
 
         var param = parsedOperation.Parameters.FirstOrDefault();
         Check.That(param.BindingSource).IsEqualTo(BindingSource.Body);
@@ -51,7 +51,7 @@ public class HyperMediaProcessorParamTests
     public void ShouldParseParamsBindingSourceAsHeader()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(ParamsController.MethodWithParamsFromHeaders));
+        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ParamsController.MethodWithParamsFromHeaders));
 
         var param = parsedOperation.Parameters.FirstOrDefault();
         Check.That(param.BindingSource).IsEqualTo(BindingSource.Header);
@@ -61,7 +61,7 @@ public class HyperMediaProcessorParamTests
     public void ShouldParseParamsBindingSourceAsForm()
     {
         var processor = new Processor();
-        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodName == nameof(ParamsController.MethodWithParamsFromForm));
+        var parsedOperation = processor.ParseController(typeof(ParamsController).GetTypeInfo()).FirstOrDefault(c => c.MethodInfo.Name == nameof(ParamsController.MethodWithParamsFromForm));
 
         var param = parsedOperation.Parameters.FirstOrDefault();
         Check.That(param.BindingSource).IsEqualTo(BindingSource.Form);
