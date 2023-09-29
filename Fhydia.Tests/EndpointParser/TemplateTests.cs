@@ -123,6 +123,20 @@ public class EndpointParserTemplateTests
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithRouteController>(nameof(WithRouteController.MethodWithRouteAttributeStartingWithSlash)).First();
         Check.That(parsedOperation.Template.ToString()).IsEqualTo("RouteUrl");
     }
+
+    [Fact]
+    public void ShouldReturnMappingWithControllerNameUsingPlaceholder()
+    {
+        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithRoutePlaceholderController>(nameof(WithRoutePlaceholderController.MethodWithoutPlaceholderInAttribute)).First();
+        Check.That(parsedOperation.Template.ToString()).IsEqualTo("api/WithRoutePlaceholder/Testing");
+    }
+
+    [Fact]
+    public void ShouldReturnMappingWithActionNameUsingPlaceholder()
+    {
+        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithRoutePlaceholderController>(nameof(WithRoutePlaceholderController.MethodWithPlaceholderInAttribute)).First();
+        Check.That(parsedOperation.Template.ToString()).IsEqualTo("api/WithRoutePlaceholder/test/MethodWithPlaceholderInAttribute");
+    }
 }
 
 internal class WithoutRouteController : Controller
@@ -188,7 +202,11 @@ internal class WithRouteController : Controller
 [Route("api/[controller]")]
 internal class WithRoutePlaceholderController : Controller
 {
-    public void MethodWithoutAttributes() { }
+    [HttpGet("test/[action]")]
+    public void MethodWithPlaceholderInAttribute() { }
+
+    [HttpGet("Testing")]
+    public void MethodWithoutPlaceholderInAttribute() { }
 }
 
 [NonController]
@@ -204,3 +222,5 @@ internal class ControllerWithNonActionAttributeController : Controller
     [NonAction]
     public void MethodWithNonActionAttribute() { }
 }
+
+

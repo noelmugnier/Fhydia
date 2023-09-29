@@ -273,13 +273,13 @@ public class EndpointParser
         var templateUri = GetTemplateUri(httpAttributeTemplate, controllerRouteAttributeTemplate);
         if (templateUri != null)
         {
-            return templateUri;
+            return FormatTemplate(templateUri.ToString(), controllerType.GetControllerClassName(), methodInfo.Name);
         }
 
         templateUri = GetTemplateUri(routeAttributeTemplate, controllerRouteAttributeTemplate);
         if (templateUri != null)
         {
-            return templateUri;
+            return FormatTemplate(templateUri.ToString(), controllerType.GetControllerClassName(), methodInfo.Name);
         }
 
         if (controllerRouteAttributeTemplate == null && httpAttributeTemplate == null && routeAttributeTemplate == null)
@@ -303,6 +303,22 @@ public class EndpointParser
         }
 
         return new Uri($"{controllerRouteTemplate}/{template}".Trim('/'), UriKind.Relative);
+    }
+
+    private static Uri FormatTemplate(string template, string controllerName, string methodName)
+    {
+        var finalTemplate = template;
+        if (template.Contains("[controller]"))
+        {
+            finalTemplate = template.Replace("[controller]", controllerName);
+        }
+
+        if (template.Contains("[action]"))
+        {
+            finalTemplate = finalTemplate.Replace("[action]", methodName);
+        }
+
+        return new Uri(finalTemplate, UriKind.Relative);
     }
 
     private static IEnumerable<ParsedParameter> ParseParameters(MethodInfo methodInfo)
