@@ -4,24 +4,24 @@ using NFluent;
 
 namespace Fhydia.Tests;
 
-public class HyperMediaProcessorGroupTests
+public class EndpointParserGroupTests
 {
     [Fact]
-    public void ShouldUseControllerNameIfNoApiExplorerAttributeFoundOnMethodAndController()
+    public void ShouldUseControllerNameWhenApiExplorerAttributeNotFound()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithoutApiExplorerAttributeController>(nameof(WithoutApiExplorerAttributeController.MethodWithoutAttributes)).First();
         Check.That(parsedOperation.Group.Name).IsEqualTo("WithoutApiExplorerAttribute");
     }
 
     [Fact]
-    public void ShouldUseApiExplorerGroupNameValueFromControllerIfNotOnMethod()
+    public void ShouldUseApiExplorerGroupNameValueFromControllerWhenNotFoundOnMethod()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithApiExplorerAttributeController>(nameof(WithApiExplorerAttributeController.MethodWithoutAttributes)).First();
         Check.That(parsedOperation.Group.Name).IsEqualTo("ControllerAttr");
     }
 
     [Fact]
-    public void ShouldUseApiExplorerGroupNameValueFromMethod()
+    public void ShouldUseApiExplorerGroupNameValueFromMethodWhenPresentOnMethodAndController()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithApiExplorerAttributeController>(nameof(WithApiExplorerAttributeController.MethodWithAttribute)).First();
         Check.That(parsedOperation.Group.Name).IsEqualTo("MethodAttr");

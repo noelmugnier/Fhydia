@@ -5,38 +5,38 @@ using NFluent;
 
 namespace Fhydia.Tests;
 
-public class HyperMediaProcessorDescriptionTests
+public class EndpointParserDescriptionTests
 {
     [Fact]
-    public void ShouldParseGroupDescriptionFromController()
+    public void ShouldParseGroupDescriptionFromControllerDescriptionAttribute()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<DescriptionController>(nameof(DescriptionController.EmptyMethod)).First();
         Check.That(parsedOperation.Group.Description).IsEqualTo("Controller description");
     }
 
     [Fact]
-    public void ShouldParseEndpointDescription()
+    public void ShouldParseEndpointDescriptionFromMethodDescriptionAttribute()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<DescriptionController>(nameof(DescriptionController.MethodWithDescription)).First();
         Check.That(parsedOperation.Description).IsEqualTo("Method description");
     }
 
     [Fact]
-    public void ShouldParseParamDescription()
+    public void ShouldParseParamDescriptionFromParameterDescriptionAttribute()
     {
         var parsedParameter = new EndpointParser().ParseControllerOperationEndpoints<DescriptionController>(nameof(DescriptionController.MethodWithParamDescription)).First().Parameters.First();
         Check.That(parsedParameter.Description).IsEqualTo("Param description");
     }
 
     [Fact]
-    public void ShouldParseReturnTypeDescription()
+    public void ShouldParseReturnTypeDescriptionFromClassDescriptionAttribute()
     {
         var parsedResult = new EndpointParser().ParseControllerOperationEndpoints<DescriptionController>(nameof(DescriptionController.MethodWithReturnTypeDescription)).First().Result;
         Check.That(parsedResult.Description).IsEqualTo("Return type description");
     }
 
     [Fact]
-    public void ShouldParsePropertyDescription()
+    public void ShouldParsePropertyDescriptionFromPropertyDescriptionAttribute()
     {
         var parsedProperty = new EndpointParser().ParseControllerOperationEndpoints<DescriptionController>(nameof(DescriptionController.MethodWithReturnTypeDescription)).First().Result.Properties.First();
         Check.That(parsedProperty.Description).IsEqualTo("Property description");

@@ -4,31 +4,24 @@ using NFluent;
 
 namespace Fhydia.Tests;
 
-public class HyperMediaProcessorReturnTests
+public class EndpointParserReturnTypeTests
 {
     [Fact]
-    public void ShouldAssignOperationControllerTypeAsRelatedType()
-    {
-        var parsedOperation = new EndpointParser().ParseControllerEndpoints<ReturnController>().First();
-        Check.That(parsedOperation.TypeInfo.AsType()).IsEqualTo(typeof(ReturnController));
-    }
-
-    [Fact]
-    public void ShouldAssignOperationReturnTypeWhenUsingSimpleType()
+    public void ShouldReturnResultTypeInfoForResult()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithReturnType)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
-    public void ShouldAssignOperationReturnInnerTypeWhenUsingActionResultTyped()
+    public void ShouldReturnResultTypeFromGenericActionResultType()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithActionResultTyped)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
-    public void ShouldAssignOperationReturnGenericTypeWhenNotUsingActionResult()
+    public void ShouldReturnGenericResultType()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithGenericTypeReturnType)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(GenericType<MyReturnType>));
@@ -41,28 +34,35 @@ public class HyperMediaProcessorReturnTests
     }
 
     [Fact]
-    public void ShouldAssignReturnedTypeFromProducesResponseTypeAttribute()
+    public void ShouldReturnResultTypeFromProducesResponseTypeAttribute()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithActionResultWithProducesResponseTypeAttribute)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
-    public void ShouldAssignReturnedTypeFromTaskInnerType()
+    public void ShouldReturnResultTypeFromMethodReturnTypeWhenTypeIsKnownEvenIfUsingProducesResponseTypeAttribute()
+    {
+        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithTypedActionResultAndProducesResponseTypeAttribute)).First();
+        Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
+    }
+
+    [Fact]
+    public void ShouldReturnResultTypeFromGenericTaskType()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithTaskReturnType)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
-    public void ShouldAssignReturnedTypeFromValueTaskInnerType()
+    public void ShouldReturnResultTypeFromGenericValueTaskType()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithValueTaskReturnType)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
-    public void ShouldAssignReturnedTypeFromTaskActionResultInnerType()
+    public void ShouldReturnGenericResultTypeFromGenericActionResultType()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithTaskActionResultGenericTyped)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(GenericType<MyReturnType>));
@@ -119,6 +119,12 @@ internal class ReturnController : Controller
     public async Task<ActionResult> MethodWithTaskActionResultWithProducesResponseTypeAttribute()
     {
         return Ok();
+    }
+
+    [ProducesResponseType(typeof(string), 200)]
+    public ActionResult<MyReturnType> MethodWithTypedActionResultAndProducesResponseTypeAttribute()
+    {
+        return Ok(new MyReturnType());
     }
 }
 

@@ -4,31 +4,31 @@ using NFluent;
 
 namespace Fhydia.Tests;
 
-public class HyperMediaProcessorNamingTests
+public class EndpointParserNameTests
 {
     [Fact]
-    public void ShouldParseOperationNameAsMethodName()
+    public void ShouldReturnMethodNameWhenNoAttributeUsed()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<NamingController>(nameof(NamingController.MethodWithoutName)).First();
         Check.That(parsedOperation.Name).IsEqualTo(nameof(NamingController).Replace("Controller", string.Empty) + "_" + nameof(NamingController.MethodWithoutName));
     }
 
     [Fact]
-    public void ShouldParseOperationNameFromHttpAttributeName()
+    public void ShouldReturnNameFromHttpAttributeNameValue()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<NamingController>(nameof(NamingController.MethodWithHttpAttributeName)).First();
         Check.That(parsedOperation.Name).IsEqualTo("http-name");
     }
 
     [Fact]
-    public void ShouldParseOperationNameFromRouteAttributeName()
+    public void ShouldReturnNameFromRouteAttributeNameValue()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<NamingController>(nameof(NamingController.MethodWithRouteAttributeName)).First();
         Check.That(parsedOperation.Name).IsEqualTo("route-name");
     }
 
     [Fact]
-    public void ShouldParseOperationNameFromActionName()
+    public void ShouldReturnNameFromActionNameAttributeValue()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<NamingController>(nameof(NamingController.MethodWithActionNameAttribute)).First();
         Check.That(parsedOperation.Name).IsEqualTo("action-name");

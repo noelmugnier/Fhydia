@@ -50,10 +50,8 @@ public class ParsedResult : Resource
             {
                 throw new InvalidOperationException($"Cannot have {returnedType} returned type without ProducesResponseTypeAttribute on Method: {methodInfo.Name} for Controller: {controllerType.Name}");
             }
-            else
-            {
-                returnedType = produceResponseTypeAttribute.Type;
-            }
+
+            returnedType = produceResponseTypeAttribute.Type;
         }
 
         return new ParsedResult(returnedType.Name, returnedType);

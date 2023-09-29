@@ -4,17 +4,17 @@ using NFluent;
 
 namespace Fhydia.Tests;
 
-public class HyperMediaProcessorVerbTests
+public class EndpointParserMethodTests
 {
     [Fact]
-    public void ShouldParseOperationHttpVerbWithGetAsDefaultVerb()
+    public void ShouldReturnDefaultGetVerbWhenNoVerbDefined()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<VerbController>(nameof(VerbController.MethodWithoutVerb)).First();
         Check.That(parsedOperation.Method).IsEqualTo(HttpVerb.GET);
     }
 
     [Fact]
-    public void ShouldParseOperationHttpPostVerb()
+    public void ShouldReturnHttpAttributeMethodVerb()
     {
         var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<VerbController>(nameof(VerbController.MethodWithHttpGetVerb)).First();
         Check.That(parsedOperation.Method).IsEqualTo(HttpVerb.POST);
