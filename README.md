@@ -16,12 +16,13 @@ So when your response enter into our dedicated Filter, Fhydia read the configure
 - [x] Basic parsing of attributes (HttpAttributes, RouteAttributes, Description, NonController...)
 - [x] Basic controller inheritance support
 - [x] Support of [controller] and [action] placeholder while parsing template uri
-- [ ] Presence or absence of FromXXXAttribute on method params (with inferences)
 - [ ] Handle multiple route attributes per controller method
 - [ ] Handle Swashbuckle SwaggerResponse and SwaggerOperation Attributes
 - [ ] Parsing AcceptVerbsAttribute
-- [ ] Parsing of ConsumesAttribute (not scheduled)
-- [ ] Namespace convention routing (not scheduled)
+- [ ] Inference of non provided FromXXXAttribute on method params
+- [ ] Parsing of ConsumesAttribute
+- [ ] Namespace convention routing
+- [ ] Other type of controller ? (FastEndpoints and ApiEndpoint)
 
 ## DSL Engine
 
@@ -37,10 +38,13 @@ So when your response enter into our dedicated Filter, Fhydia read the configure
 ## Transformers
 
 - [ ] JSON-LD
-- [ ] HAL
-- [ ] HAL-Forms
+- [ ] JSON-API
+- [ ] HAL/HAL-FORMS
+- [ ] UBER
+- [ ] MASON
 - [ ] SIREN
 - [ ] HYDRA
+- [ ] COLLECTION-JSON
 
 ## Handlers
 
