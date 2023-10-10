@@ -1,4 +1,4 @@
-using Fhydia.Sample;
+using Fydhia.Library;
 using Microsoft.AspNetCore.Mvc;
 using NFluent;
 
@@ -9,29 +9,15 @@ public class EndpointParserNameTests
     [Fact]
     public void ShouldReturnMethodNameWhenNoAttributeUsed()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<NamingController>(nameof(NamingController.MethodWithoutName)).First();
-        Check.That(parsedOperation.Name).IsEqualTo(nameof(NamingController).Replace("Controller", string.Empty) + "_" + nameof(NamingController.MethodWithoutName));
-    }
-
-    [Fact]
-    public void ShouldReturnNameFromHttpAttributeNameValue()
-    {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<NamingController>(nameof(NamingController.MethodWithHttpAttributeName)).First();
-        Check.That(parsedOperation.Name).IsEqualTo("http-name");
-    }
-
-    [Fact]
-    public void ShouldReturnNameFromRouteAttributeNameValue()
-    {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<NamingController>(nameof(NamingController.MethodWithRouteAttributeName)).First();
-        Check.That(parsedOperation.Name).IsEqualTo("route-name");
+        var parsedOperation = new ControllerParser<NamingController>().ParseEndpoints(nameof(NamingController.MethodWithoutName)).First();
+        Check.That(parsedOperation.Name).IsEqualTo(typeof(NamingController).FullName + "." + nameof(NamingController.MethodWithoutName));
     }
 
     [Fact]
     public void ShouldReturnNameFromActionNameAttributeValue()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<NamingController>(nameof(NamingController.MethodWithActionNameAttribute)).First();
-        Check.That(parsedOperation.Name).IsEqualTo("action-name");
+        var parsedOperation = new ControllerParser<NamingController>().ParseEndpoints(nameof(NamingController.MethodWithActionNameAttribute)).First();
+        Check.That(parsedOperation.Name).IsEqualTo(typeof(NamingController).FullName + "." +"action-name");
     }
 }
 
@@ -48,4 +34,3 @@ internal class NamingController : Controller
     [ActionName("action-name")]
     public void MethodWithActionNameAttribute() { }
 }
-

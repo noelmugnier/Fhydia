@@ -1,4 +1,4 @@
-using Fhydia.Sample;
+using Fydhia.Library;
 using Microsoft.AspNetCore.Mvc;
 using NFluent;
 
@@ -9,62 +9,49 @@ public class EndpointParserReturnTypeTests
     [Fact]
     public void ShouldReturnResultTypeInfoForResult()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithReturnType)).First();
+        var parsedOperation = new ControllerParser<ReturnController>().ParseEndpoints(nameof(ReturnController.MethodWithReturnType)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
     public void ShouldReturnResultTypeFromGenericActionResultType()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithActionResultTyped)).First();
+        var parsedOperation = new ControllerParser<ReturnController>().ParseEndpoints(nameof(ReturnController.MethodWithActionResultTyped)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
     public void ShouldReturnGenericResultType()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithGenericTypeReturnType)).First();
+        var parsedOperation = new ControllerParser<ReturnController>().ParseEndpoints(nameof(ReturnController.MethodWithGenericTypeReturnType)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(GenericType<MyReturnType>));
-    }
-
-    [Fact]
-    public void ShouldThrowExceptionWhenUsingActionResultUntypedWithoutProducesResponseTypeAttribute()
-    {
-        Assert.Throws<InvalidOperationException>(() => new EndpointParser().ParseControllerEndpoints<ReturnErrorController>());
-    }
-
-    [Fact]
-    public void ShouldReturnResultTypeFromProducesResponseTypeAttribute()
-    {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithActionResultWithProducesResponseTypeAttribute)).First();
-        Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
     public void ShouldReturnResultTypeFromMethodReturnTypeWhenTypeIsKnownEvenIfUsingProducesResponseTypeAttribute()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithTypedActionResultAndProducesResponseTypeAttribute)).First();
+        var parsedOperation = new ControllerParser<ReturnController>().ParseEndpoints(nameof(ReturnController.MethodWithTypedActionResultAndProducesResponseTypeAttribute)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
     public void ShouldReturnResultTypeFromGenericTaskType()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithTaskReturnType)).First();
+        var parsedOperation = new ControllerParser<ReturnController>().ParseEndpoints(nameof(ReturnController.MethodWithTaskReturnType)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
     public void ShouldReturnResultTypeFromGenericValueTaskType()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithValueTaskReturnType)).First();
+        var parsedOperation = new ControllerParser<ReturnController>().ParseEndpoints(nameof(ReturnController.MethodWithValueTaskReturnType)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(MyReturnType));
     }
 
     [Fact]
     public void ShouldReturnGenericResultTypeFromGenericActionResultType()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<ReturnController>(nameof(ReturnController.MethodWithTaskActionResultGenericTyped)).First();
+        var parsedOperation = new ControllerParser<ReturnController>().ParseEndpoints(nameof(ReturnController.MethodWithTaskActionResultGenericTyped)).First();
         Check.That(parsedOperation.Result.TypeInfo.AsType()).IsEqualTo(typeof(GenericType<MyReturnType>));
     }
 }

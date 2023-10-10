@@ -1,6 +1,6 @@
 using System.Dynamic;
 
-namespace Fhydia.Sample;
+namespace Fydhia.Library;
 
 public static class ObjectExtensions
 {
@@ -19,14 +19,6 @@ public static class ObjectExtensions
 
     public static IDictionary<string, object> ToDictionary(this object? obj)
     {
-        var dict = new Dictionary<string, object>();
-
-        foreach (var propertyInfo in obj?.GetType().GetProperties())
-        {
-            var currentValue = propertyInfo.GetValue(obj);
-            dict.TryAdd(propertyInfo.Name, currentValue);
-        }
-
-        return dict;
+        return obj as IDictionary<string, object>;
     }
 }

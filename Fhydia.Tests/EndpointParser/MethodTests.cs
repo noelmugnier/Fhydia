@@ -1,23 +1,23 @@
-using Fhydia.Sample;
+using Fydhia.Library;
 using Microsoft.AspNetCore.Mvc;
 using NFluent;
 
 namespace Fhydia.Tests;
 
-public class EndpointParserMethodTests
+public class ControllerParserEndpointMethodTests
 {
     [Fact]
     public void ShouldReturnDefaultGetVerbWhenNoVerbDefined()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<VerbController>(nameof(VerbController.MethodWithoutVerb)).First();
-        Check.That(parsedOperation.Method).IsEqualTo(HttpVerb.GET);
+        var parsedOperation = new ControllerParser<VerbController>().ParseEndpoints(nameof(VerbController.MethodWithoutVerb)).First();
+        Check.That(parsedOperation.Verb).IsEqualTo(HttpVerb.GET);
     }
 
     [Fact]
     public void ShouldReturnHttpAttributeMethodVerb()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<VerbController>(nameof(VerbController.MethodWithHttpGetVerb)).First();
-        Check.That(parsedOperation.Method).IsEqualTo(HttpVerb.POST);
+        var parsedOperation = new ControllerParser<VerbController>().ParseEndpoints(nameof(VerbController.MethodWithHttpGetVerb)).First();
+        Check.That(parsedOperation.Verb).IsEqualTo(HttpVerb.POST);
     }
 }
 
@@ -28,4 +28,3 @@ internal class VerbController : Controller
     [HttpPost]
     public void MethodWithHttpGetVerb() { }
 }
-

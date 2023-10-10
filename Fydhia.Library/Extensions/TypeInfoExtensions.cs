@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Reflection;
 
-namespace Fhydia.Sample;
+namespace Fydhia.Library;
 
 public static class TypeInfoExtensions
 {

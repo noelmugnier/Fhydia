@@ -1,4 +1,4 @@
-namespace Fhydia.Sample;
+namespace Fydhia.Library;
 
 public static class StringExtensions
 {

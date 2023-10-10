@@ -1,4 +1,4 @@
-using Fhydia.Sample;
+using Fydhia.Library;
 using Microsoft.AspNetCore.Mvc;
 using NFluent;
 
@@ -9,21 +9,21 @@ public class EndpointParserGroupTests
     [Fact]
     public void ShouldUseControllerNameWhenApiExplorerAttributeNotFound()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithoutApiExplorerAttributeController>(nameof(WithoutApiExplorerAttributeController.MethodWithoutAttributes)).First();
+        var parsedOperation = new ControllerParser<WithoutApiExplorerAttributeController>().ParseEndpoints(nameof(WithoutApiExplorerAttributeController.MethodWithoutAttributes)).First();
         Check.That(parsedOperation.Group.Name).IsEqualTo("WithoutApiExplorerAttribute");
     }
 
     [Fact]
     public void ShouldUseApiExplorerGroupNameValueFromControllerWhenNotFoundOnMethod()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithApiExplorerAttributeController>(nameof(WithApiExplorerAttributeController.MethodWithoutAttributes)).First();
+        var parsedOperation = new ControllerParser<WithApiExplorerAttributeController>().ParseEndpoints(nameof(WithApiExplorerAttributeController.MethodWithoutAttributes)).First();
         Check.That(parsedOperation.Group.Name).IsEqualTo("ControllerAttr");
     }
 
     [Fact]
     public void ShouldUseApiExplorerGroupNameValueFromMethodWhenPresentOnMethodAndController()
     {
-        var parsedOperation = new EndpointParser().ParseControllerOperationEndpoints<WithApiExplorerAttributeController>(nameof(WithApiExplorerAttributeController.MethodWithAttribute)).First();
+        var parsedOperation = new ControllerParser<WithApiExplorerAttributeController>().ParseEndpoints(nameof(WithApiExplorerAttributeController.MethodWithAttribute)).First();
         Check.That(parsedOperation.Group.Name).IsEqualTo("MethodAttr");
     }
 }
