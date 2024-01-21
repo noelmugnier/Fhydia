@@ -1,54 +1,41 @@
-# Fhydia (Fluent Hypermedia) Library
+# Fhydia (Fluent Hy[perme]dia) Library
 
-The goal of this library is to augment your endpoints response with Hypermedia (HATEOAS) features with a minimum impact on your existing code.
-The objective is to support JSON-LD, HAL, SIREN and HYDRA specifications.
+The goal of this library is to enrich your endpoints response with Hypermedia (HATEOAS) features with the least impact on your existing code.
+The objective is to support multiple HATEOAS specifications.
 
 # How ?
 
-By parsing your controller/endpoints and generate a DSL in order to transform your responses according to your needs. This DSL try to infer a lot of configurations to avoid manual stuff, but if you need more control you can fluently describe your endpoints, models and links.
-So when your response enter into our dedicated Filter, Fhydia read the configured DSL and (depending on the accept-header provided in the request) add or remove stuff dynamically onto your returned object (by transforming it to an Expando)
+By describing in a fluent way your response objects relations and configuration.
+When your response enter into the dedicated Filter, Fhydia read the configuration and depending on the accept-header provided in the request add or remove stuff dynamically onto your returned object (by transforming it to an ExpandoObject)
 
 # TODO
 
 ## Parser
 
-- [x] Basic controller parsing (Name, Group, Methods with basic url)
-- [x] Basic parsing of attributes (HttpAttributes, RouteAttributes, Description, NonController...)
-- [x] Basic controller inheritance support
-- [x] Support of [controller] and [action] placeholder while parsing template uri
-- [ ] Handle multiple route attributes per controller method
-- [ ] Handle Swashbuckle SwaggerResponse and SwaggerOperation Attributes
-- [ ] Parsing AcceptVerbsAttribute
-- [ ] Inference of non provided FromXXXAttribute on method params
-- [ ] Parsing of ConsumesAttribute
-- [ ] Namespace convention routing
-- [ ] Other type of controller ? (FastEndpoints and ApiEndpoint)
-
-## DSL Engine
-
-- [ ] Build endpoints from parsed controller data
-- [ ] Aggregate returned type to endpoints to facilitate links generation
+- [x] Basic controller parsing (Name, Group, Methods and returned type)
 
 ## Fluent Configuration
 
-- [ ] AddFhydia extension wrapper to configure API
-- [ ] UseFhydia extension wrapper
+- [x] Create basic builders
+- [x] Create basic configuration from builders
+
+## Dedicated configuration
 - [ ] FhydiaConfiguration<T> support (like EF) to keep your configuration separated
-
-## Transformers
-
-- [ ] JSON-LD
-- [ ] JSON-API
-- [ ] HAL/HAL-FORMS
-- [ ] UBER
-- [ ] MASON
-- [ ] SIREN
-- [ ] HYDRA
-- [ ] COLLECTION-JSON
 
 ## Handlers
 
-- [ ] Header Filter to parse request header in order to choose the configuration to use (hal, hydra, jsonld etc)
-- [ ] Response Filter to augment the model with corresponding configuration
-- [ ] Auth/Visibility pipeline support (to show/hide properties or links depending on role)
-- [ ] OpenApi3 Links support for swashbuckle and other lib ?
+- [x] Response Filter to enrich the model with corresponding configuration
+- [ ] Request header Media type support in order to choose the configuration to use (hal, hydra, jsonld etc)
+- [ ] Authorization/Visibility support (to show/hide properties or links depending on role)
+
+## Transformers
+
+- [ ] HAL
+- [ ] JSON-API
+- [ ] COLLECTION-JSON
+- [ ] HYDRA
+- [ ] JSON-LD
+- [ ] HAL-FORMS
+- [ ] SIREN
+- [ ] UBER
+- [ ] MASON
