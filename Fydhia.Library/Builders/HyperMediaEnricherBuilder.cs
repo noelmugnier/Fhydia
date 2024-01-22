@@ -14,7 +14,7 @@ public class HyperMediaEnricherBuilder
 
     public TypeEnricherBuilder<T> ConfigureEnricherForType<T>() where T : class, new()
     {
-        var typeEnricherBuilder = new TypeEnricherBuilder<T>(this, _linkGenerator);
+        var typeEnricherBuilder = new TypeEnricherBuilder<T>(this);
         _typeEnricherBuilders.Add(typeEnricherBuilder);
         return typeEnricherBuilder;
     }
@@ -22,6 +22,6 @@ public class HyperMediaEnricherBuilder
     public HyperMediaEnricher Build()
     {
         var typeEnrichers = _typeEnricherBuilders.Select(builder => builder.Build());
-        return new HyperMediaEnricher(typeEnrichers);
+        return new HyperMediaEnricher(_linkGenerator, typeEnrichers);
     }
 }

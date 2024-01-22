@@ -12,7 +12,7 @@ When your response enter into the dedicated Filter, Fhydia read the configuratio
 
 ## Parser
 
-- [x] Basic controller parsing (Name, Group, Methods and returned type)
+- [x] Basic controller parsing (Name, Group, Methods and returned type) to use it in formatters
 
 ## Fluent Configuration
 
@@ -24,18 +24,19 @@ When your response enter into the dedicated Filter, Fhydia read the configuratio
 
 ## Handlers
 
-- [x] Response Filter to enrich the model with corresponding configuration
-- [ ] Request header Media type support in order to choose the configuration to use (hal, hydra, jsonld etc)
+- [x] Response Filter to force model as ExpandoObject if needed
+- [x] Request 'Accept' header support in order to choose the configuration to use (hal, jsonld, collection-json etc)
+- [ ] Format nested response objects by recursion
 - [ ] Authorization/Visibility support (to show/hide properties or links depending on role)
 
-## Transformers
+## Formatters
 
 - [ ] HAL
-- [ ] JSON-API
+- [ ] JSON-LD
 - [ ] COLLECTION-JSON
 - [ ] HYDRA
-- [ ] JSON-LD
 - [ ] HAL-FORMS
+- [ ] JSON-API
 - [ ] SIREN
 - [ ] UBER
 - [ ] MASON

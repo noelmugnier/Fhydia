@@ -8,7 +8,10 @@ public static class ObjectExtensions
     {
         var expando = new ExpandoObject();
 
-        foreach (var propertyInfo in obj.GetType().GetProperties())
+        var type = obj.GetType();
+        expando.AddTypeProperty(type);
+
+        foreach (var propertyInfo in type.GetProperties())
         {
             var currentValue = propertyInfo.GetValue(obj);
             expando.TryAdd(propertyInfo.Name, currentValue);

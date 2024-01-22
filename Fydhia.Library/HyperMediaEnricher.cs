@@ -1,30 +1,36 @@
 ﻿using System.Dynamic;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 
 namespace Fydhia.Library;
 
 public class HyperMediaEnricher
 {
-    private readonly IEnumerable<TypeEnricher> _typeEnrichers;
+    private readonly LinkGenerator _linkGenerator;
+    private readonly IEnumerable<TypeEnricherConfiguration> _typeEnricherConfigurations;
 
-    internal HyperMediaEnricher(IEnumerable<TypeEnricher> typeEnrichers)
+    internal HyperMediaEnricher(LinkGenerator linkGenerator, IEnumerable<TypeEnricherConfiguration> typeEnricherConfigurations)
     {
-        _typeEnrichers = typeEnrichers;
+        _linkGenerator = linkGenerator;
+        _typeEnricherConfigurations = typeEnricherConfigurations;
     }
 
-    public ExpandoObject Enrich(HttpContext? httpContext, object resultValue)
+    public ExpandoObject Enrich(HttpContext httpContext, ExpandoObject resultValue)
     {
-        var resultType = resultValue.GetType();
-        var typeEnricher = GetTypeEnricher(resultType);
+        var formatter = HypermediaTypeFormatterFactory.Create(httpContext, _linkGenerator);
+
+        //TODO recursive enriching for nested objects
+
+        var typeEnricher = GetTypeEnricher(resultValue.GetOriginalType());
         if (typeEnricher is null)
-            return resultValue.ToExpando();
+            return resultValue;
 
-        return typeEnricher.Enrich(httpContext!, resultValue.ToExpando());
+        return formatter.Format(resultValue, typeEnricher);
     }
 
-    private TypeEnricher? GetTypeEnricher(Type getType)
+    private TypeEnricherConfiguration? GetTypeEnricher(Type getType)
     {
-        return _typeEnrichers.SingleOrDefault(t => t.TypeToEnrich == getType.GetTypeInfo());
+        return _typeEnricherConfigurations.SingleOrDefault(t => t.TypeToEnrich == getType.GetTypeInfo());
     }
 }
