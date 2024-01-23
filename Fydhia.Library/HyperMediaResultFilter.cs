@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
 namespace Fydhia.Library;
@@ -15,12 +16,12 @@ public class HyperMediaResultFilter : IAsyncAlwaysRunResultFilter
         if (resultValue is null)
             return next();
 
-        var acceptHeader = context.HttpContext.Request.Headers[HeaderNames.Accept];
-        if(!acceptHeader.Contains("application/hal+json"))
+        var jsonHyperMediaOutputFormatter = context.HttpContext.RequestServices.GetRequiredService<JsonHyperMediaOutputFormatter>();
+        context.HttpContext.Request.Headers.TryGetValue(HeaderNames.Accept, out var acceptHeaders);
+        if(!acceptHeaders.Intersect(jsonHyperMediaOutputFormatter.SupportedMediaTypes).Any())
             return next();
 
         var expando = objectResult.Value.ToExpando();
-        expando.TryAdd("_type", objectResult.Value!.GetType());
 
         objectResult.Value = expando;
         return next();

@@ -11,15 +11,11 @@ public class JsonHyperMediaOutputFormatter : SystemTextJsonOutputFormatter
     public JsonHyperMediaOutputFormatter(JsonSerializerOptions serializerOptions) : base(serializerOptions)
     {
         SupportedMediaTypes.Clear();
-        SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/hal+json"));
-        SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/ld+json"));
-        SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/collection+json"));
     }
 
     public override bool CanWriteResult(OutputFormatterCanWriteContext context)
     {
-        context.HttpContext.Request.Headers.TryGetValue(HeaderNames.Accept, out var acceptHeader);
-        var acceptHeaders = context.HttpContext.Request.Headers[HeaderNames.Accept];
+        context.HttpContext.Request.Headers.TryGetValue(HeaderNames.Accept, out var acceptHeaders);
         if(acceptHeaders.Intersect(SupportedMediaTypes).Any())
             return true;
 
@@ -37,7 +33,7 @@ public class JsonHyperMediaOutputFormatter : SystemTextJsonOutputFormatter
     public override Task WriteAsync(OutputFormatterWriteContext context)
     {
         var hyperMediaEnricher = context.HttpContext.RequestServices.GetRequiredService<HyperMediaEnricher>();
-        hyperMediaEnricher.Enrich(context.HttpContext, context.Object as ExpandoObject);
+        hyperMediaEnricher.Enrich(context.HttpContext, (ExpandoObject)context.Object!);
 
         return base.WriteAsync(context);
     }

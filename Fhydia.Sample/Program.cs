@@ -2,10 +2,12 @@ using Fhydia.Sample;
 using Fydhia.Library;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddFhydia()
-    .AddJsonHyperMediaOutputFormatter();
 
 builder.Services.AddSwaggerGen();
+
+builder.Services
+    .AddFhydia()
+    .AddHalJson();
 
 builder.Services.AddSingleton(provider =>
 {
