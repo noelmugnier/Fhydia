@@ -26,7 +26,7 @@ public class LinkConfiguration
         where TControllerType : Controller
     {
         var controllerParser = new ControllerParser<TControllerType>();
-        var controllerEndpoints = controllerParser.ParseEndpoints(methodName);
+        var controllerEndpoints = controllerParser.ParseEndpoints(methodName).ToList();
         if (controllerEndpoints is null || !controllerEndpoints.Any())
             throw new InvalidOperationException(
                 $"Method {methodName} not found in controller {typeof(TControllerType).FullName}");

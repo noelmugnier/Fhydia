@@ -17,11 +17,10 @@ builder.Services.AddSingleton(provider =>
             .ConfigureControllerLink<TestController>(nameof(TestController.GetFromRouteParam), "self")
                 .WithParameterMapping("id", nameof(CustomReturnType.Id))
         .TypeEnricherBuilder
-            .ConfigureControllerLink<TestController>(nameof(TestController.GetFromQueryParam))
-                .WithParameterMappings(new Dictionary<string, string>
-                {
-                    { "id", nameof(CustomReturnType.Id) }
-                });
+        .HyperMediaEnricherBuilder
+        .ConfigureEnricherForType<SubType>()
+            .ConfigureControllerLink<TestController>(nameof(TestController.GetFromQueryParam), "self")
+                .WithParameterMapping("id", nameof(CustomReturnType.Id));
 
     return hyperMediaConfiguration.Build();
 });
