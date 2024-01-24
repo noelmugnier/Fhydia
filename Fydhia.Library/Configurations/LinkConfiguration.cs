@@ -14,11 +14,11 @@ public class LinkConfiguration
     public IEnumerable<ParsedParameter> Parameters => _endpoint.Parameters;
 
     private LinkConfiguration(string rel, EndpointResource endpointResource,
-        IDictionary<string, string> parameterMappings)
+        IDictionary<string, string>? parameterMappings = null)
     {
         Rel = rel;
         _endpoint = endpointResource;
-        _parameterMappings = parameterMappings;
+        _parameterMappings = parameterMappings ?? new Dictionary<string, string>();
     }
 
     internal static LinkConfiguration CreateForController<TControllerType>(string methodName,
@@ -41,8 +41,8 @@ public class LinkConfiguration
     }
 
     public HyperMediaLink GenerateHyperMediaLink(LinkGenerator linkGenerator, HttpContext httpContext,
-        IDictionary<string, object> resultProperties)
+        IDictionary<string, object?> values)
     {
-        return _endpoint.GenerateHyperMediaLink(linkGenerator, _parameterMappings, httpContext, resultProperties);
+        return _endpoint.GenerateHyperMediaLink(linkGenerator, _parameterMappings, httpContext, values);
     }
 }

@@ -6,9 +6,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Fydhia.Library;
 
-public class JsonHyperMediaOutputFormatter : SystemTextJsonOutputFormatter
+public class HyperMediaJsonOutputFormatter : SystemTextJsonOutputFormatter
 {
-    public JsonHyperMediaOutputFormatter(JsonSerializerOptions serializerOptions) : base(serializerOptions)
+    public HyperMediaJsonOutputFormatter(JsonSerializerOptions serializerOptions) : base(serializerOptions)
     {
         SupportedMediaTypes.Clear();
     }
@@ -32,7 +32,7 @@ public class JsonHyperMediaOutputFormatter : SystemTextJsonOutputFormatter
 
     public override Task WriteAsync(OutputFormatterWriteContext context)
     {
-        var hyperMediaEnricher = context.HttpContext.RequestServices.GetRequiredService<HyperMediaEnricher>();
+        var hyperMediaEnricher = context.HttpContext.RequestServices.GetRequiredService<HyperMediaJsonEnricher>();
         hyperMediaEnricher.Enrich(context.HttpContext, (ExpandoObject)context.Object!);
 
         return base.WriteAsync(context);

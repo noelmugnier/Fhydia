@@ -3,21 +3,26 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Fydhia.Library;
 
+public abstract class TypeEnricherBuilder
+{
+    internal abstract TypeEnricherConfiguration Build();
+}
+
 public class TypeEnricherBuilder<TType> : TypeEnricherBuilder where TType : class, new()
 {
-    public HyperMediaEnricherBuilder HyperMediaEnricherBuilder { get; }
+    public HyperMediaConfigurationBuilder HyperMediaConfigurationBuilder { get; }
     private readonly List<LinkConfigurationBuilder> _linksConfigurationBuilders = new();
 
-    internal TypeEnricherBuilder(HyperMediaEnricherBuilder hyperMediaEnricherBuilder)
+    internal TypeEnricherBuilder(HyperMediaConfigurationBuilder hyperMediaConfigurationBuilder)
     {
-        HyperMediaEnricherBuilder = hyperMediaEnricherBuilder;
+        HyperMediaConfigurationBuilder = hyperMediaConfigurationBuilder;
     }
 
-    public ControllerLinkConfigurationBuilder<TType, TControllerType> ConfigureControllerLink<TControllerType>(
+    public LinkConfigurationBuilder<TType, TControllerType> ConfigureControllerLink<TControllerType>(
         string methodName, string? rel = null)
         where TControllerType : Controller
     {
-        var linkConfigurationBuilder = new ControllerLinkConfigurationBuilder<TType, TControllerType>(this);
+        var linkConfigurationBuilder = new LinkConfigurationBuilder<TType, TControllerType>(this);
         linkConfigurationBuilder.WithMethod(methodName);
 
         if (!string.IsNullOrWhiteSpace(rel))
@@ -33,9 +38,4 @@ public class TypeEnricherBuilder<TType> : TypeEnricherBuilder where TType : clas
         var linkConfigurations = _linksConfigurationBuilders.Select(linkBuilder => linkBuilder.Build());
         return new TypeEnricherConfiguration(typeof(TType).GetTypeInfo(), linkConfigurations);
     }
-}
-
-public abstract class TypeEnricherBuilder
-{
-    internal abstract TypeEnricherConfiguration Build();
 }

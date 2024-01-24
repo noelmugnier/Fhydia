@@ -27,5 +27,5 @@ public abstract class EndpointResource : Resource
 
     public abstract HyperMediaLink GenerateHyperMediaLink(LinkGenerator linkGenerator,
         IDictionary<string, string> parametersMapping,
-        HttpContext httpContext, IDictionary<string, object> valuesToMap);
+        HttpContext httpContext, IDictionary<string, object?> values);
 }

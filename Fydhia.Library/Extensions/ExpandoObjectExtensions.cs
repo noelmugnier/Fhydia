@@ -16,7 +16,7 @@ public static class ExpandoObjectExtensions
         return obj;
     }
 
-    public static Type GetOriginalType(this ExpandoObject expando)
+    public static Type? GetOriginalType(this ExpandoObject expando)
     {
         return expando.ToDictionary()["_type"] as Type;
     }

@@ -20,7 +20,7 @@ public class ControllerEndpoint : EndpointResource
         Description = methodInfo.GetTypeDescription();
     }
 
-    public static IEnumerable<ControllerEndpoint> Parse(TypeInfo controllerTypeInfo, MethodInfo controllerMethod)
+    public static IEnumerable<ControllerEndpoint> Create(TypeInfo controllerTypeInfo, MethodInfo controllerMethod)
     {
         var methodName = ParseMethodName(controllerMethod);
         var controllerName = controllerTypeInfo.GetControllerClassName();
@@ -69,7 +69,7 @@ public class ControllerEndpoint : EndpointResource
 
     private static IEnumerable<HttpVerb> ParseHttpVerbs(MethodInfo methodInfo)
     {
-        var httpMethodAttributes = methodInfo.GetCustomAttributes<HttpMethodAttribute>(true);
+        var httpMethodAttributes = methodInfo.GetCustomAttributes<HttpMethodAttribute>(true).ToList();
         if (!httpMethodAttributes.Any())
         {
             return new[] { HttpVerb.GET };
@@ -80,21 +80,21 @@ public class ControllerEndpoint : EndpointResource
 
     public override HyperMediaLink GenerateHyperMediaLink(LinkGenerator linkGenerator,
         IDictionary<string, string> parametersMapping,
-        HttpContext httpContext, IDictionary<string, object> valuesToMap)
+        HttpContext httpContext, IDictionary<string, object?> values)
     {
-        var values = new ExpandoObject();
+        var result = new ExpandoObject();
         foreach (var mapper in parametersMapping)
         {
-            if (!valuesToMap.TryGetValue(mapper.Value, out var value))
+            if (!values.TryGetValue(mapper.Value, out var value))
             {
                 continue;
             }
 
-            values.TryAdd(mapper.Key, value);
+            result.TryAdd(mapper.Key, value);
         }
 
         var path = linkGenerator.GetUriByAction(httpContext, MethodName, ControllerName,
-            values, options: new LinkOptions { LowercaseUrls = true, LowercaseQueryStrings = true });
+            result, options: new LinkOptions { LowercaseUrls = true, LowercaseQueryStrings = true });
 
         return new HyperMediaLink(path, Verb.ToString());
     }

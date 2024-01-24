@@ -16,14 +16,12 @@ public class HyperMediaResultFilter : IAsyncAlwaysRunResultFilter
         if (resultValue is null)
             return next();
 
-        var jsonHyperMediaOutputFormatter = context.HttpContext.RequestServices.GetRequiredService<JsonHyperMediaOutputFormatter>();
+        var hyperMediaConfiguration = context.HttpContext.RequestServices.GetRequiredService<HyperMediaConfiguration>();
         context.HttpContext.Request.Headers.TryGetValue(HeaderNames.Accept, out var acceptHeaders);
-        if(!acceptHeaders.Intersect(jsonHyperMediaOutputFormatter.SupportedMediaTypes).Any())
+        if(!acceptHeaders.Intersect(hyperMediaConfiguration.SupportedMediaTypes).Any())
             return next();
 
-        var expando = objectResult.Value.ToExpando();
-
-        objectResult.Value = expando;
+        objectResult.Value = objectResult.Value.ToExpando();
         return next();
     }
 }

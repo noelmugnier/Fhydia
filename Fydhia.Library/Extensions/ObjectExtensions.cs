@@ -6,6 +6,9 @@ public static class ObjectExtensions
 {
     public static ExpandoObject ToExpando<T>(this T? obj)
     {
+        if (obj is null)
+            return new ExpandoObject();
+
         var expando = new ExpandoObject();
 
         var type = obj.GetType();
@@ -20,8 +23,13 @@ public static class ObjectExtensions
         return expando;
     }
 
-    public static IDictionary<string, object> ToDictionary(this object? obj)
+    public static IDictionary<string, object?> ToDictionary(this object? obj)
     {
-        return obj as IDictionary<string, object>;
+        return obj as IDictionary<string, object?> ?? new Dictionary<string, object?>();
+    }
+
+    public static bool IsDefault<T>(this T obj)
+    {
+        return obj?.ToString() == obj?.GetType().GetDefault()?.ToString();
     }
 }

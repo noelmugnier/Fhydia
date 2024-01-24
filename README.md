@@ -19,7 +19,8 @@ When your response enter into the dedicated Filter, Fhydia read the configuratio
 - [x] Create basic builders
 - [x] Create basic configuration from builders
 
-## Dedicated configuration
+## Typed configuration
+
 - [ ] FhydiaConfiguration<T> support (like EF) to keep your configuration separated
 
 ## Handlers
@@ -29,14 +30,19 @@ When your response enter into the dedicated Filter, Fhydia read the configuratio
 - [x] Format nested response objects by recursion
 - [ ] Authorization/Visibility support (to show/hide properties or links depending on role)
 
-## Formatters
+## Must have formatters
 
 - [ ] HAL
 - [ ] JSON-LD
 - [ ] COLLECTION-JSON
 - [ ] HYDRA
 - [ ] HAL-FORMS
+
+## Nice to have formatters
+
 - [ ] JSON-API
 - [ ] SIREN
 - [ ] UBER
 - [ ] MASON
+
+## Tests

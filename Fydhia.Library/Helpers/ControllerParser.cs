@@ -63,7 +63,7 @@ public class ControllerParser<TController> where TController : Controller
             return Enumerable.Empty<ControllerEndpoint>();
         }
 
-        var endpoints = ControllerEndpoint.Parse(controllerTypeInfo, controllerMethod);
+        var endpoints = ControllerEndpoint.Create(controllerTypeInfo, controllerMethod);
         _endpoints.TryAdd(controllerMethodIdentifier, endpoints);
         return endpoints;
     }
