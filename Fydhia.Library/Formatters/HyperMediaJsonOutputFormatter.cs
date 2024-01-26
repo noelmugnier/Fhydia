@@ -15,8 +15,7 @@ public class HyperMediaJsonOutputFormatter : SystemTextJsonOutputFormatter
 
     public override bool CanWriteResult(OutputFormatterCanWriteContext context)
     {
-        context.HttpContext.Request.Headers.TryGetValue(HeaderNames.Accept, out var acceptHeaders);
-        if(acceptHeaders.Intersect(SupportedMediaTypes).Any())
+        if(context.HttpContext.Request.AcceptMediaTypes(SupportedMediaTypes))
             return true;
 
         return base.CanWriteResult(context);
@@ -33,7 +32,7 @@ public class HyperMediaJsonOutputFormatter : SystemTextJsonOutputFormatter
     public override Task WriteAsync(OutputFormatterWriteContext context)
     {
         var hyperMediaEnricher = context.HttpContext.RequestServices.GetRequiredService<HyperMediaJsonEnricher>();
-        hyperMediaEnricher.Enrich(context.HttpContext, (ExpandoObject)context.Object!);
+        hyperMediaEnricher.Enrich((ExpandoObject)context.Object!, context.HttpContext.Request.GetAcceptedMediaTypes());
 
         return base.WriteAsync(context);
     }

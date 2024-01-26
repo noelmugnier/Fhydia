@@ -1,9 +1,6 @@
-﻿using System.Dynamic;
-using System.Reflection;
-using Microsoft.AspNetCore.Http;
+﻿using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Routing;
 
 namespace Fydhia.Library;
 
@@ -13,7 +10,7 @@ public class ControllerEndpoint : EndpointResource
     public string MethodName { get; }
 
     private ControllerEndpoint(string methodName, string controllerName, MethodInfo methodInfo, TypeInfo controllerType, HttpVerb verb,
-        ControllerGroup group, ControllerEndpointResult result, IEnumerable<ParsedParameter> parameters) : base($"{controllerType.FullName}.{methodName}", controllerType, verb, group, result, parameters)
+        ControllerGroup group, ReturnedType result, IEnumerable<ParsedParameter> parameters) : base($"{controllerType.FullName}.{methodName}", controllerType, verb, group, result, parameters)
     {
         ControllerName = controllerName;
         MethodName = methodName;
@@ -28,7 +25,7 @@ public class ControllerEndpoint : EndpointResource
         var parameters = ParseParameters(controllerMethod);
 
         var group = ControllerGroup.CreateFrom(controllerMethod, controllerTypeInfo);
-        var result = ControllerEndpointResult.CreateFrom(controllerMethod, controllerTypeInfo);
+        var result = ReturnedType.CreateFrom(controllerMethod, controllerTypeInfo);
 
         return verbs.Select(verb => new ControllerEndpoint(methodName, controllerName, controllerMethod, controllerTypeInfo, verb, group, result,
             parameters));
@@ -76,26 +73,5 @@ public class ControllerEndpoint : EndpointResource
         }
 
         return httpMethodAttributes.SelectMany(attr => attr.HttpMethods).Select(httpMethod => Enum.Parse<HttpVerb>(httpMethod));
-    }
-
-    public override HyperMediaLink GenerateHyperMediaLink(LinkGenerator linkGenerator,
-        IDictionary<string, string> parametersMapping,
-        HttpContext httpContext, IDictionary<string, object?> values)
-    {
-        var result = new ExpandoObject();
-        foreach (var mapper in parametersMapping)
-        {
-            if (!values.TryGetValue(mapper.Value, out var value))
-            {
-                continue;
-            }
-
-            result.TryAdd(mapper.Key, value);
-        }
-
-        var path = linkGenerator.GetUriByAction(httpContext, MethodName, ControllerName,
-            result, options: new LinkOptions { LowercaseUrls = true, LowercaseQueryStrings = true });
-
-        return new HyperMediaLink(path, Verb.ToString());
     }
 }

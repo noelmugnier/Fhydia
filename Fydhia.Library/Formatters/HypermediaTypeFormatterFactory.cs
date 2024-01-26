@@ -1,24 +1,16 @@
 ﻿using System.Dynamic;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Net.Http.Headers;
 
 namespace Fydhia.Library;
 
 public abstract class HypermediaTypeFormatter
 {
-    public abstract ExpandoObject Format(ExpandoObject value, TypeEnricherConfiguration typeEnricherConfiguration);
+    public abstract ExpandoObject Format(ExpandoObject responseObject, TypeEnricherConfiguration typeEnricherConfiguration);
 }
 
 public static class HypermediaTypeFormatterFactory
 {
-    public static HypermediaTypeFormatter Create(HttpContext httpContext, LinkGenerator linkGenerator)
+    public static HypermediaTypeFormatter Create(IEnumerable<string> acceptedMediaTypes, LinkFormatter linkGenerator)
     {
-        var acceptHeader = httpContext.Request.Headers[HeaderNames.Accept].FirstOrDefault();
-        if (acceptHeader is null)
-            throw new NotSupportedException();
-
-        var acceptedMediaTypes = acceptHeader.Split(',');
         HypermediaTypeFormatter? formatter = null;
 
         foreach (var acceptedMediaType in acceptedMediaTypes)
@@ -26,7 +18,7 @@ public static class HypermediaTypeFormatterFactory
             if (acceptedMediaType != "application/hal+json")
                 continue;
 
-            formatter = new JsonHalTypeFormatter(httpContext, linkGenerator);
+            formatter = new JsonHalTypeFormatter(linkGenerator);
             break;
         }
 

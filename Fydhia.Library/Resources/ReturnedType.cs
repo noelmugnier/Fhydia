@@ -3,18 +3,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Fydhia.Library;
 
-public class ControllerEndpointResult : Resource
+public class ReturnedType : Resource
 {
     public IEnumerable<ParsedProperty> Properties { get; }
 
-    private ControllerEndpointResult(string name, Type type) : base(name, type)
+    private ReturnedType(string name, Type type) : base(name, type)
     {
         Properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Select(p => new ParsedProperty(p));
         Description = type.GetTypeDescription();
     }
 
-    public static ControllerEndpointResult CreateFrom(MethodInfo methodInfo, TypeInfo controllerType)
+    public static ReturnedType CreateFrom(MethodInfo methodInfo, TypeInfo controllerType)
     {
         var returnedType = methodInfo.ReturnType;
         if (returnedType.IsGenericType)
@@ -30,7 +30,7 @@ public class ControllerEndpointResult : Resource
                 returnedType = produceResponseTypeAttribute.Type;
         }
 
-        return new ControllerEndpointResult(returnedType.Name, returnedType);
+        return new ReturnedType(returnedType.Name, returnedType);
     }
 
     private static Type RecursivelyFindComplexOrSimpleType(Type type)

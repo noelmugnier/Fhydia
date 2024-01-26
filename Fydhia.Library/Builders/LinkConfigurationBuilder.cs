@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Fydhia.Library;
 
@@ -58,19 +57,8 @@ public class LinkConfigurationBuilder<TType, TControllerType> : LinkConfiguratio
 
     internal override LinkConfiguration Build()
     {
-        if (string.IsNullOrWhiteSpace(_methodName))
-            throw new ArgumentException(
-                $"Method name must be provided to build a link configuration for controller {typeof(TControllerType).FullName}");
-
-        var linkConfiguration = LinkConfiguration.CreateForController<TControllerType>(_methodName, _parameterMappings, _rel);
-        var parametersCount = linkConfiguration.Parameters.Count(p =>
-            p.BindingSource == BindingSource.Path
-            || p.BindingSource == BindingSource.Query
-            || p.BindingSource == BindingSource.Header);
-
-        if (parametersCount != _parameterMappings.Count())
-            throw new ArgumentException(
-                $"Parameter mappings must be provided for all path, query and headers parameters for method {_methodName} on controller {typeof(TControllerType).FullName}");
+        var linkConfiguration = LinkConfiguration<TControllerType>.Create(_methodName, _parameterMappings, _rel);
+        linkConfiguration.ValidateParameterMappings();
 
         return linkConfiguration;
     }

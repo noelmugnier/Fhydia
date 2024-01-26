@@ -2,27 +2,25 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 
 namespace Fydhia.Library;
 
 public class HyperMediaJsonEnricher
 {
-    private readonly LinkGenerator _linkGenerator;
+    private readonly LinkFormatter _linkGenerator;
     private readonly IEnumerable<TypeEnricherConfiguration> _typeEnricherConfigurations;
     private readonly JsonSerializerOptions _serializerOptions;
 
-    public HyperMediaJsonEnricher(HyperMediaConfiguration hyperMediaConfiguration, LinkGenerator linkGenerator)
+    public HyperMediaJsonEnricher(HyperMediaConfiguration hyperMediaConfiguration, LinkFormatter linkGenerator)
     {
         _linkGenerator = linkGenerator;
         _typeEnricherConfigurations = hyperMediaConfiguration.ConfiguredTypes;
         _serializerOptions = hyperMediaConfiguration.JsonSerializerOptions;
     }
 
-    public ExpandoObject Enrich(HttpContext httpContext, ExpandoObject value)
+    public ExpandoObject Enrich(ExpandoObject value, IEnumerable<string> acceptedMediaTypes)
     {
-        var formatter = HypermediaTypeFormatterFactory.Create(httpContext, _linkGenerator);
+        var formatter = HypermediaTypeFormatterFactory.Create(acceptedMediaTypes, _linkGenerator);
 
         EnrichValuePropertiesRecursively(value, formatter);
 
@@ -33,9 +31,9 @@ public class HyperMediaJsonEnricher
         return formatter.Format(value, typeEnricherConfiguration);
     }
 
-    private void EnrichValuePropertiesRecursively(ExpandoObject resultValue, HypermediaTypeFormatter formatter)
+    private void EnrichValuePropertiesRecursively(ExpandoObject resultValues, HypermediaTypeFormatter formatter)
     {
-        foreach (var keyValuePair in resultValue.ToList())
+        foreach (var keyValuePair in resultValues.ToList())
         {
             if(keyValuePair.Value is null && _serializerOptions.DefaultIgnoreCondition == JsonIgnoreCondition.Never)
                 continue;
@@ -44,7 +42,7 @@ public class HyperMediaJsonEnricher
                 || _serializerOptions.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingDefault && keyValuePair.Value.IsDefault()
                 || _serializerOptions.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingNull && keyValuePair.Value is null)
             {
-                resultValue.Remove(keyValuePair.Key, out _);
+                resultValues.Remove(keyValuePair.Key, out _);
                 continue;
             }
 
@@ -52,13 +50,13 @@ public class HyperMediaJsonEnricher
             if (propertyEnricher is null)
                 continue;
 
-            resultValue.Remove(keyValuePair.Key, out _);
+            resultValues.Remove(keyValuePair.Key, out _);
 
-            var propertyValue = keyValuePair.Value.ToExpando();
-            EnrichValuePropertiesRecursively(propertyValue, formatter);
+            var propertyValueProperties = keyValuePair.Value.ToExpando();
+            EnrichValuePropertiesRecursively(propertyValueProperties, formatter);
 
-            var enrichedProperty = formatter.Format(propertyValue, propertyEnricher);
-            resultValue.TryAdd(keyValuePair.Key, enrichedProperty);
+            var enrichedProperty = formatter.Format(propertyValueProperties, propertyEnricher);
+            resultValues.TryAdd(keyValuePair.Key, enrichedProperty);
         }
     }
     private TypeEnricherConfiguration? GetTypeEnricher(Type? typeToEnrich)

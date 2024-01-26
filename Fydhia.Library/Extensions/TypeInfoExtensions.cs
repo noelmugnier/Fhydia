@@ -1,3 +1,4 @@
+using System.Collections;
 using System.ComponentModel;
 using System.Reflection;
 
@@ -35,4 +36,3 @@ public static class TypeInfoExtensions
         return propertyInfo.GetCustomAttribute<DescriptionAttribute>()?.Description;
     }
 }
-

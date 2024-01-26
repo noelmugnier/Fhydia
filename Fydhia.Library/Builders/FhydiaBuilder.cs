@@ -19,12 +19,14 @@ public class FhydiaBuilder
         _hyperMediaJsonOutputFormatter = new HyperMediaJsonOutputFormatter(serializerOptions);
 
         _serviceCollection = serviceCollection;
-        _serviceCollection.AddControllers(c => c.Filters.Add<HyperMediaResultFilter>());
+        _serviceCollection.AddHttpContextAccessor();
         _serviceCollection.AddScoped<HyperMediaJsonEnricher>();
+        _serviceCollection.AddScoped<LinkFormatter>();
         _serviceCollection.Configure<MvcOptions>(options =>
         {
             options.OutputFormatters.Insert(0, _hyperMediaJsonOutputFormatter);
         });
+        _serviceCollection.AddControllers(c => c.Filters.Add<HyperMediaResultFilter>());
     }
 
     public FhydiaBuilder AddHalJsonSupport()

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Net.Http.Headers;
 
 namespace Fydhia.Library;
 
@@ -17,8 +16,7 @@ public class HyperMediaResultFilter : IAsyncAlwaysRunResultFilter
             return next();
 
         var hyperMediaConfiguration = context.HttpContext.RequestServices.GetRequiredService<HyperMediaConfiguration>();
-        context.HttpContext.Request.Headers.TryGetValue(HeaderNames.Accept, out var acceptHeaders);
-        if(!acceptHeaders.Intersect(hyperMediaConfiguration.SupportedMediaTypes).Any())
+        if(!context.HttpContext.Request.AcceptMediaTypes(hyperMediaConfiguration.SupportedMediaTypes))
             return next();
 
         objectResult.Value = objectResult.Value.ToExpando();

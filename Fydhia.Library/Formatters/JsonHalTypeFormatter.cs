@@ -1,34 +1,32 @@
 ﻿using System.Dynamic;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 
 namespace Fydhia.Library;
 
 public class JsonHalTypeFormatter : HypermediaTypeFormatter
 {
-    private readonly HttpContext _httpContext;
-    private readonly LinkGenerator _linkGenerator;
-    public string MediaType => "application/hal+json";
+    private readonly LinkFormatter _linkGenerator;
 
-    public JsonHalTypeFormatter(HttpContext httpContext, LinkGenerator linkGenerator)
+    public const string MediaType = "application/hal+json";
+
+    public JsonHalTypeFormatter(LinkFormatter linkGenerator)
     {
-        _httpContext = httpContext;
         _linkGenerator = linkGenerator;
     }
 
-    public override ExpandoObject Format(ExpandoObject value, TypeEnricherConfiguration typeEnricherConfiguration)
+    public override ExpandoObject Format(ExpandoObject responseObject, TypeEnricherConfiguration typeEnricherConfiguration)
     {
-        var properties = value.ToDictionary();
-        var links = new ExpandoObject();
+        var responseObjectProperties = responseObject.ToDictionary();
+        var links = new Dictionary<string, HyperMediaHalLink>();
 
         foreach (var linkConfiguration in typeEnricherConfiguration.ConfiguredLinks)
         {
-            var hyperMediaLink = linkConfiguration.GenerateHyperMediaLink(_linkGenerator, _httpContext, properties);
-            links.TryAdd(linkConfiguration.Rel, hyperMediaLink);
+            var hyperMediaLink = linkConfiguration.GenerateHyperMediaLink(_linkGenerator, responseObjectProperties);
+            links.TryAdd(linkConfiguration.Rel, new HyperMediaHalLink(hyperMediaLink.Href, linkConfiguration.Title, linkConfiguration.Name, linkConfiguration.Templated));
         }
 
-        value.TryAdd("_links", links);
-        value.RemoveTypeProperty();
-        return value;
+        responseObject.TryAdd("_links", links);
+        responseObject.RemoveTypeProperty();
+
+        return responseObject;
     }
 }
