@@ -20,8 +20,8 @@ public class FhydiaBuilder
 
         _serviceCollection = serviceCollection;
         _serviceCollection.AddHttpContextAccessor();
-        _serviceCollection.AddScoped<HyperMediaJsonEnricher>();
-        _serviceCollection.AddScoped<LinkFormatter>();
+        _serviceCollection.AddScoped<IHyperMediaJsonEnricher, HyperMediaJsonEnricher>();
+        _serviceCollection.AddScoped<IProvideHyperMediaTypeFormatter, HyperMediaTypeFormatterProvider>();
         _serviceCollection.Configure<MvcOptions>(options =>
         {
             options.OutputFormatters.Insert(0, _hyperMediaJsonOutputFormatter);

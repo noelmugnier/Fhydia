@@ -31,8 +31,8 @@ public class HyperMediaJsonOutputFormatter : SystemTextJsonOutputFormatter
 
     public override Task WriteAsync(OutputFormatterWriteContext context)
     {
-        var hyperMediaEnricher = context.HttpContext.RequestServices.GetRequiredService<HyperMediaJsonEnricher>();
-        hyperMediaEnricher.Enrich((ExpandoObject)context.Object!, context.HttpContext.Request.GetAcceptedMediaTypes());
+        var hyperMediaEnricher = context.HttpContext.RequestServices.GetRequiredService<IHyperMediaJsonEnricher>();
+        hyperMediaEnricher.Enrich((ExpandoObject)context.Object!, context.HttpContext);
 
         return base.WriteAsync(context);
     }

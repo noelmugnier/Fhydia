@@ -1,6 +1,8 @@
 ﻿using System.Dynamic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Routing;
 
 namespace Fydhia.Library;
 
@@ -27,8 +29,8 @@ public abstract class LinkConfiguration
         ParameterMappings = parameterMappings ?? new Dictionary<string, string>();
     }
 
-    public abstract HyperMediaLink GenerateHyperMediaLink(LinkFormatter linkGenerator,
-        IDictionary<string, object?> responseObjectProperties);
+    public abstract HyperMediaLink GenerateHyperMediaLink(HttpContext context, LinkGenerator linkGenerator,
+        IDictionary<string, object?> returnedObjectProperties);
 
     public void ValidateParameterMappings()
     {
@@ -82,10 +84,10 @@ public class LinkConfiguration<TControllerType>:LinkConfiguration
             parameterMappings);
     }
 
-    public override HyperMediaLink GenerateHyperMediaLink(LinkFormatter linkGenerator, IDictionary<string, object?> responseObjectProperties)
+    public override HyperMediaLink GenerateHyperMediaLink(HttpContext httpContext, LinkGenerator linkGenerator, IDictionary<string, object?> responseObjectProperties)
     {
         var routeValues = BuildActionRouteValues(responseObjectProperties);
-        var path = linkGenerator.FormatActionLink(_methodName, _controllerName, routeValues);
+        var path = linkGenerator.GetUriByAction(httpContext, _methodName, _controllerName, routeValues, options: new LinkOptions { LowercaseUrls = true, LowercaseQueryStrings = true });
         return new HyperMediaLink(path, Verb.ToString(), ReturnedType, ParsedParameters);
     }
 
