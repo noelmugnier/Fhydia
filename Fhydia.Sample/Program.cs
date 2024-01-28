@@ -6,7 +6,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services
     .AddFhydia()
-    .Configure(new []{typeof(OtherTypeConfiguration).Assembly})
+    .Configure(new []{typeof(OtherTypeConfigurator).Assembly})
     .Configure(hyperMediaConfigurationBuilder =>
     {
         hyperMediaConfigurationBuilder

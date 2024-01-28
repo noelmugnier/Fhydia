@@ -2,7 +2,7 @@ using Fydhia.Library;
 
 namespace Fhydia.Sample;
 
-public class OtherTypeConfiguration : ITypeConfiguration<Other>
+public class OtherTypeConfigurator : ITypeConfigurator<Other>
 {
     public void Configure(TypeConfigurationBuilder<Other> builder)
     {

@@ -52,7 +52,7 @@ public class FhydiaBuilder
 
     public FhydiaBuilder Configure(Assembly[] assemblies)
     {
-        var genericTypeConfiguration = typeof(ITypeConfiguration<>);
+        var genericTypeConfiguration = typeof(ITypeConfigurator<>);
         foreach (var assembly in assemblies)
         {
             var typesToConfigure = assembly
@@ -63,19 +63,17 @@ public class FhydiaBuilder
 
             foreach (var typeToConfigure in typesToConfigure)
             {
-                // var typeToGenerateInfo = genericTypeConfiguration.MakeGenericType(genericType);
-
-                var typeConfiguration = (ITypeConfiguration)Activator.CreateInstance(typeToConfigure);
+                var typeConfiguration = (ITypeConfigurator)Activator.CreateInstance(typeToConfigure)!;
                 var configureTypeMethodInfo = typeof(HyperMediaConfigurationBuilder).GetMethod(nameof(HyperMediaConfigurationBuilder.ConfigureType));
 
-                var genericInterface = typeToConfigure.GetInterfaces().FirstOrDefault(i =>
+                var genericInterface = typeToConfigure.GetInterfaces().SingleOrDefault(i =>
                     i.IsGenericType && i.GetGenericTypeDefinition() == genericTypeConfiguration);
 
-                var genericType = genericInterface.GetGenericArguments().First();
+                var genericType = genericInterface!.GetGenericArguments().First();
 
-                var configureTypeMethod = configureTypeMethodInfo.MakeGenericMethod(genericType);
-                var typeConfigurationBuilder = (TypeConfigurationBuilder)configureTypeMethod.Invoke(_builder, null);
-                typeConfiguration.Configure(typeConfigurationBuilder);
+                var configureTypeMethod = configureTypeMethodInfo!.MakeGenericMethod(genericType);
+                var typeConfigurationBuilder = (TypeConfigurationBuilder)configureTypeMethod.Invoke(_builder, null)!;
+                typeConfiguration!.Configure(typeConfigurationBuilder);
             }
         }
 
@@ -99,20 +97,5 @@ public class FhydiaBuilder
         _serviceCollection.AddSingleton(_builder.Build());
 
         return _serviceCollection;
-    }
-}
-
-public interface ITypeConfiguration
-{
-    public void Configure(TypeConfigurationBuilder builder);
-}
-
-public interface ITypeConfiguration<T> : ITypeConfiguration where T : class, new()
-{
-    public void Configure(TypeConfigurationBuilder<T> builder);
-
-    void ITypeConfiguration.Configure(TypeConfigurationBuilder builder)
-    {
-        Configure((TypeConfigurationBuilder<T>)builder);
     }
 }
