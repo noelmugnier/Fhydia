@@ -6,10 +6,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services
     .AddFhydia()
-    .AddHalJsonSupport()
-    .ConfigureEnricher(enricher =>
+    .Configure(configBuilder =>
     {
-        enricher
+        configBuilder
             .ConfigureType<CustomReturnType>()
             .ConfigureLink<TestController>(nameof(TestController.GetFromRouteParam), "self")
                 .WithParameterMapping("id", nameof(CustomReturnType.Id))
@@ -18,7 +17,8 @@ builder.Services
             .ConfigureType<SubType>()
             .ConfigureLink<TestController>(nameof(TestController.GetFromQueryParam), "self")
                 .WithParameterMapping("id", nameof(CustomReturnType.Id));
-    });
+    })
+    .AddHalJsonSupport();
 
 var app = builder.Build();
 

@@ -1,13 +1,6 @@
-﻿using System.Dynamic;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+﻿using Microsoft.AspNetCore.Routing;
 
 namespace Fydhia.Library;
-
-public abstract class HypermediaTypeFormatter
-{
-    public abstract void Format(ExpandoObject responseObject, HttpContext httpContext);
-}
 
 public interface IProvideHyperMediaTypeFormatter
 {
@@ -16,12 +9,12 @@ public interface IProvideHyperMediaTypeFormatter
 
 public class HyperMediaTypeFormatterProvider : IProvideHyperMediaTypeFormatter
 {
-    private readonly HyperMediaConfiguration _hyperMediaConfiguration;
+    private readonly TypeConfigurationCollection _typeConfigurationCollection;
     private readonly LinkGenerator _linkGenerator;
 
     public HyperMediaTypeFormatterProvider(HyperMediaConfiguration hyperMediaConfiguration, LinkGenerator linkGenerator)
     {
-        _hyperMediaConfiguration = hyperMediaConfiguration;
+        _typeConfigurationCollection = hyperMediaConfiguration.ConfiguredTypes;
         _linkGenerator = linkGenerator;
     }
 
@@ -34,7 +27,7 @@ public class HyperMediaTypeFormatterProvider : IProvideHyperMediaTypeFormatter
             if (acceptedMediaType != "application/hal+json")
                 continue;
 
-            formatter = new JsonHalTypeFormatter(_hyperMediaConfiguration, _linkGenerator);
+            formatter = new JsonHalTypeFormatter(_typeConfigurationCollection, _linkGenerator);
             break;
         }
 

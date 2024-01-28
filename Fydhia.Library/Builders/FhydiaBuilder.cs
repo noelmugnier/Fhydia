@@ -47,17 +47,12 @@ public class FhydiaBuilder
         return this;
     }
 
-    public IServiceCollection Build()
-    {
-        return _serviceCollection;
-    }
-
-    public IServiceCollection ConfigureEnricher(Action<HyperMediaConfigurationBuilder> configure)
+    public FhydiaBuilder Configure(Action<HyperMediaConfigurationBuilder> configure)
     {
         var builder = new HyperMediaConfigurationBuilder(_hyperMediaJsonOutputFormatter.SerializerOptions, _hyperMediaJsonOutputFormatter.SupportedMediaTypes);
         configure.Invoke(builder);
 
         _serviceCollection.AddSingleton(builder.Build());
-        return _serviceCollection;
+        return this;
     }
 }

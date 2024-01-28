@@ -7,7 +7,7 @@ public class HyperMediaConfigurationBuilder
 {
     private readonly JsonSerializerOptions _serializerOptions;
     private readonly MediaTypeCollection _supportedMediaTypes;
-    private readonly List<TypeEnricherBuilder> _typeConfigurationBuilders = new();
+    private readonly List<TypeConfigurationBuilder> _typeConfigurationBuilders = new();
 
     internal HyperMediaConfigurationBuilder(JsonSerializerOptions serializerOptions, MediaTypeCollection supportedMediaTypes)
     {
@@ -19,13 +19,15 @@ public class HyperMediaConfigurationBuilder
     {
         var typeConfigurationBuilder = new TypeConfigurationBuilder<T>(this);
         _typeConfigurationBuilders.Add(typeConfigurationBuilder);
+
         return typeConfigurationBuilder;
     }
 
     public HyperMediaConfiguration Build()
     {
+        var typeConfigurations = _typeConfigurationBuilders.Select(builder => builder.Build());
         return new HyperMediaConfiguration(
-            new TypeConfigurationCollection(_typeConfigurationBuilders.Select(builder => builder.Build())),
+            new TypeConfigurationCollection(typeConfigurations),
             _serializerOptions,
             _supportedMediaTypes);
     }

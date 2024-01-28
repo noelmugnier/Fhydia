@@ -7,13 +7,11 @@ namespace Fydhia.Library;
 public class JsonHalTypeFormatter : HypermediaTypeFormatter
 {
     private readonly LinkGenerator _linkGenerator;
-    private readonly TypeConfigurationCollection _typeConfiguration;
+    private readonly TypeConfigurationCollection _typeConfigurationCollection;
 
-    public const string MediaType = "application/hal+json";
-
-    public JsonHalTypeFormatter(HyperMediaConfiguration hyperMediaConfiguration, LinkGenerator linkGenerator)
+    public JsonHalTypeFormatter(TypeConfigurationCollection typeConfigurationCollection, LinkGenerator linkGenerator)
     {
-        _typeConfiguration = hyperMediaConfiguration.ConfiguredTypes;
+        _typeConfigurationCollection = typeConfigurationCollection;
         _linkGenerator = linkGenerator;
     }
 
@@ -24,7 +22,7 @@ public class JsonHalTypeFormatter : HypermediaTypeFormatter
             Format((ExpandoObject)responseProperty.Value!, httpContext);
         }
 
-        var typeConfiguration = _typeConfiguration.GetConfiguration(responseObject.GetOriginalType());
+        var typeConfiguration = _typeConfigurationCollection.GetConfiguration(responseObject.GetOriginalType());
         if (typeConfiguration is null)
             return;
 

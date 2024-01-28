@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Fydhia.Library;
 
-public abstract class TypeEnricherBuilder
+public abstract class TypeConfigurationBuilder
 {
     internal abstract TypeConfiguration Build();
 }
 
-public class TypeConfigurationBuilder<TType> : TypeEnricherBuilder where TType : class, new()
+public class TypeConfigurationBuilder<TType> : TypeConfigurationBuilder where TType : class, new()
 {
     public HyperMediaConfigurationBuilder HyperMediaConfigurationBuilder { get; }
     private readonly List<LinkConfigurationBuilder> _linksConfigurationBuilders = new();
@@ -18,11 +18,11 @@ public class TypeConfigurationBuilder<TType> : TypeEnricherBuilder where TType :
         HyperMediaConfigurationBuilder = hyperMediaConfigurationBuilder;
     }
 
-    public LinkConfigurationBuilder<TType, TControllerType> ConfigureLink<TControllerType>(
+    public ControllerLinkConfigurationBuilder<TType, TControllerType> ConfigureLink<TControllerType>(
         string methodName, string? rel = null)
         where TControllerType : Controller
     {
-        var linkConfigurationBuilder = new LinkConfigurationBuilder<TType, TControllerType>(this);
+        var linkConfigurationBuilder = new ControllerLinkConfigurationBuilder<TType, TControllerType>(this);
         linkConfigurationBuilder.WithMethod(methodName);
 
         if (!string.IsNullOrWhiteSpace(rel))

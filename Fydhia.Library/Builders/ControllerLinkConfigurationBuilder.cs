@@ -7,7 +7,7 @@ public abstract class LinkConfigurationBuilder
     internal abstract LinkConfiguration Build();
 }
 
-public class LinkConfigurationBuilder<TType, TControllerType> : LinkConfigurationBuilder
+public class ControllerLinkConfigurationBuilder<TType, TControllerType> : LinkConfigurationBuilder
     where TControllerType : Controller
     where TType : class, new()
 {
@@ -17,31 +17,31 @@ public class LinkConfigurationBuilder<TType, TControllerType> : LinkConfiguratio
 
     public TypeConfigurationBuilder<TType> TypeConfigurationBuilder { get; }
 
-    internal LinkConfigurationBuilder(TypeConfigurationBuilder<TType> typeConfigurationBuilder)
+    internal ControllerLinkConfigurationBuilder(TypeConfigurationBuilder<TType> typeConfigurationBuilder)
     {
         TypeConfigurationBuilder = typeConfigurationBuilder;
     }
 
-    public LinkConfigurationBuilder<TType, TControllerType> WithRel(string? rel)
+    public ControllerLinkConfigurationBuilder<TType, TControllerType> WithRel(string? rel)
     {
         _rel = rel;
         return this;
     }
 
-    public LinkConfigurationBuilder<TType, TControllerType> WithMethod(string methodName)
+    public ControllerLinkConfigurationBuilder<TType, TControllerType> WithMethod(string methodName)
     {
         _methodName = methodName;
         return this;
     }
 
-    public LinkConfigurationBuilder<TType, TControllerType> WithParameterMapping(string parameterName,
+    public ControllerLinkConfigurationBuilder<TType, TControllerType> WithParameterMapping(string parameterName,
         string propertyName)
     {
         _parameterMappings.Add(parameterName, propertyName);
         return this;
     }
 
-    public LinkConfigurationBuilder<TType, TControllerType> WithParameterMappings(
+    public ControllerLinkConfigurationBuilder<TType, TControllerType> WithParameterMappings(
         IDictionary<string, string> parameterMappings)
     {
         foreach (var parameterMapping in parameterMappings)
@@ -57,7 +57,7 @@ public class LinkConfigurationBuilder<TType, TControllerType> : LinkConfiguratio
 
     internal override LinkConfiguration Build()
     {
-        var linkConfiguration = LinkConfiguration<TControllerType>.Create(_methodName, _parameterMappings, _rel);
+        var linkConfiguration = ControllerLinkConfiguration<TControllerType>.Create(_methodName, _parameterMappings, _rel);
         linkConfiguration.ValidateParameterMappings();
 
         return linkConfiguration;
