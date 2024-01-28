@@ -15,11 +15,11 @@ public class LinkConfigurationBuilder<TType, TControllerType> : LinkConfiguratio
     private string _methodName;
     private Dictionary<string, string> _parameterMappings = new();
 
-    public TypeEnricherBuilder<TType> TypeEnricherBuilder { get; }
+    public TypeConfigurationBuilder<TType> TypeConfigurationBuilder { get; }
 
-    internal LinkConfigurationBuilder(TypeEnricherBuilder<TType> typeEnricherBuilder)
+    internal LinkConfigurationBuilder(TypeConfigurationBuilder<TType> typeConfigurationBuilder)
     {
-        TypeEnricherBuilder = typeEnricherBuilder;
+        TypeConfigurationBuilder = typeConfigurationBuilder;
     }
 
     public LinkConfigurationBuilder<TType, TControllerType> WithRel(string? rel)

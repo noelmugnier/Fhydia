@@ -2,74 +2,50 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http;
 
 namespace Fydhia.Library;
 
 public interface IHyperMediaJsonEnricher
 {
-    ExpandoObject Enrich(ExpandoObject value, HttpContext httpContext);
+    void Enrich(ExpandoObject value);
 }
 
 public class HyperMediaJsonEnricher : IHyperMediaJsonEnricher
 {
-    private readonly IProvideHyperMediaTypeFormatter _hyperMediaTypeFormatterProvider;
-    private readonly IEnumerable<TypeEnricherConfiguration> _typeEnricherConfigurations;
     private readonly JsonSerializerOptions _serializerOptions;
+    private readonly TypeConfigurationCollection _typeConfigurationConfigurations;
 
-    public HyperMediaJsonEnricher(HyperMediaConfiguration hyperMediaConfiguration, IProvideHyperMediaTypeFormatter hyperMediaTypeFormatterProvider)
+    public HyperMediaJsonEnricher(HyperMediaConfiguration hyperMediaConfiguration)
     {
-        _hyperMediaTypeFormatterProvider = hyperMediaTypeFormatterProvider;
-        _typeEnricherConfigurations = hyperMediaConfiguration.ConfiguredTypes;
         _serializerOptions = hyperMediaConfiguration.JsonSerializerOptions;
+        _typeConfigurationConfigurations = hyperMediaConfiguration.ConfiguredTypes;
     }
 
-    public ExpandoObject Enrich(ExpandoObject value, HttpContext httpContext)
+    public void Enrich(ExpandoObject resultValues)
     {
-        var formatter = _hyperMediaTypeFormatterProvider.GetFormatter(httpContext.Request.GetAcceptedMediaTypes());
-
-        EnrichValuePropertiesRecursively(value, formatter, httpContext);
-
-        var typeEnricherConfiguration = GetTypeEnricher(value.GetOriginalType());
-        if (typeEnricherConfiguration is null)
-            return value;
-
-        return formatter.Format(value, typeEnricherConfiguration, httpContext);
-    }
-
-    private void EnrichValuePropertiesRecursively(ExpandoObject resultValues, HypermediaTypeFormatter formatter, HttpContext httpContext)
-    {
-        foreach (var keyValuePair in resultValues.ToList())
+        foreach (var resultProperty in resultValues
+                     .Where(resultProperty => resultProperty.Value is not null || _serializerOptions.DefaultIgnoreCondition != JsonIgnoreCondition.Never)
+                     .Where(resultProperty => resultProperty.Key != "_type")
+                     .ToList())
         {
-            if(keyValuePair.Value is null && _serializerOptions.DefaultIgnoreCondition == JsonIgnoreCondition.Never)
-                continue;
-
             if (_serializerOptions.DefaultIgnoreCondition == JsonIgnoreCondition.Always
-                || _serializerOptions.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingDefault && keyValuePair.Value.IsDefault()
-                || _serializerOptions.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingNull && keyValuePair.Value is null)
+                || _serializerOptions.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingDefault && resultProperty.Value.IsDefault()
+                || _serializerOptions.DefaultIgnoreCondition == JsonIgnoreCondition.WhenWritingNull && resultProperty.Value is null)
             {
-                resultValues.Remove(keyValuePair.Key, out _);
+                resultValues.Remove(resultProperty.Key, out _);
                 continue;
             }
 
-            var propertyEnricher = GetTypeEnricher(keyValuePair.Value.GetType());
-            if (propertyEnricher is null)
+            var typeConfiguration = _typeConfigurationConfigurations.GetConfiguration(resultProperty.Value!.GetType());
+            if (typeConfiguration is null)
                 continue;
 
-            resultValues.Remove(keyValuePair.Key, out _);
+            resultValues.Remove(resultProperty.Key, out _);
 
-            var propertyValueProperties = keyValuePair.Value.ToExpando();
-            EnrichValuePropertiesRecursively(propertyValueProperties, formatter, httpContext);
+            var propertyValueProperties = resultProperty.Value.ToExpando();
+            Enrich(propertyValueProperties);
 
-            var enrichedProperty = formatter.Format(propertyValueProperties, propertyEnricher, httpContext);
-            resultValues.TryAdd(keyValuePair.Key, enrichedProperty);
+            resultValues.TryAdd(resultProperty.Key, propertyValueProperties);
         }
-    }
-    private TypeEnricherConfiguration? GetTypeEnricher(Type? typeToEnrich)
-    {
-        if(typeToEnrich is null)
-            return null;
-
-        return _typeEnricherConfigurations.SingleOrDefault(t => t.TypeToEnrich == typeToEnrich.GetTypeInfo());
     }
 }

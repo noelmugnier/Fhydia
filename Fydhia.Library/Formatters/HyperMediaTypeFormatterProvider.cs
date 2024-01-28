@@ -6,7 +6,7 @@ namespace Fydhia.Library;
 
 public abstract class HypermediaTypeFormatter
 {
-    public abstract ExpandoObject Format(ExpandoObject responseObject, TypeEnricherConfiguration typeEnricherConfiguration, HttpContext httpContext);
+    public abstract void Format(ExpandoObject responseObject, HttpContext httpContext);
 }
 
 public interface IProvideHyperMediaTypeFormatter
@@ -16,10 +16,12 @@ public interface IProvideHyperMediaTypeFormatter
 
 public class HyperMediaTypeFormatterProvider : IProvideHyperMediaTypeFormatter
 {
+    private readonly HyperMediaConfiguration _hyperMediaConfiguration;
     private readonly LinkGenerator _linkGenerator;
 
-    public HyperMediaTypeFormatterProvider(LinkGenerator linkGenerator)
+    public HyperMediaTypeFormatterProvider(HyperMediaConfiguration hyperMediaConfiguration, LinkGenerator linkGenerator)
     {
+        _hyperMediaConfiguration = hyperMediaConfiguration;
         _linkGenerator = linkGenerator;
     }
 
@@ -32,7 +34,7 @@ public class HyperMediaTypeFormatterProvider : IProvideHyperMediaTypeFormatter
             if (acceptedMediaType != "application/hal+json")
                 continue;
 
-            formatter = new JsonHalTypeFormatter(_linkGenerator);
+            formatter = new JsonHalTypeFormatter(_hyperMediaConfiguration, _linkGenerator);
             break;
         }
 

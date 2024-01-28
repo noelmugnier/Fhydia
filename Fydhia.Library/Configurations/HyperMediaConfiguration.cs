@@ -5,11 +5,11 @@ namespace Fydhia.Library;
 
 public class HyperMediaConfiguration
 {
-    public IEnumerable<TypeEnricherConfiguration> ConfiguredTypes { get; }
+    public TypeConfigurationCollection ConfiguredTypes { get; }
     public JsonSerializerOptions JsonSerializerOptions { get; }
     public MediaTypeCollection SupportedMediaTypes { get; }
 
-    internal HyperMediaConfiguration(IEnumerable<TypeEnricherConfiguration> configuredTypes,
+    internal HyperMediaConfiguration(TypeConfigurationCollection configuredTypes,
         JsonSerializerOptions jsonSerializerOptions, MediaTypeCollection supportedMediaTypes)
     {
         ConfiguredTypes = configuredTypes;

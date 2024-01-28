@@ -2,7 +2,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Net.Http.Headers;
 
 namespace Fydhia.Library;
 
@@ -15,24 +14,22 @@ public class HyperMediaJsonOutputFormatter : SystemTextJsonOutputFormatter
 
     public override bool CanWriteResult(OutputFormatterCanWriteContext context)
     {
-        if(context.HttpContext.Request.AcceptMediaTypes(SupportedMediaTypes))
-            return true;
-
-        return base.CanWriteResult(context);
+        return context.HttpContext.Request.AcceptMediaTypes(SupportedMediaTypes) || base.CanWriteResult(context);
     }
 
     protected override bool CanWriteType(Type? type)
     {
-        if(type != typeof(ExpandoObject))
-            return false;
-
-        return base.CanWriteType(type);
+        return type == typeof(ExpandoObject) && base.CanWriteType(type);
     }
 
     public override Task WriteAsync(OutputFormatterWriteContext context)
     {
         var hyperMediaEnricher = context.HttpContext.RequestServices.GetRequiredService<IHyperMediaJsonEnricher>();
-        hyperMediaEnricher.Enrich((ExpandoObject)context.Object!, context.HttpContext);
+        hyperMediaEnricher.Enrich((ExpandoObject)context.Object!);
+
+        var hyperMediaTypeFormatterProvider = context.HttpContext.RequestServices.GetRequiredService<IProvideHyperMediaTypeFormatter>();
+        var formatter = hyperMediaTypeFormatterProvider.GetFormatter(context.HttpContext.Request.GetAcceptedMediaTypes());
+        formatter.Format((ExpandoObject)context.Object!, context.HttpContext);
 
         return base.WriteAsync(context);
     }

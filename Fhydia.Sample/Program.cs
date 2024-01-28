@@ -10,13 +10,13 @@ builder.Services
     .ConfigureEnricher(enricher =>
     {
         enricher
-            .ConfigureForType<CustomReturnType>()
-            .ConfigureControllerLink<TestController>(nameof(TestController.GetFromRouteParam), "self")
+            .ConfigureType<CustomReturnType>()
+            .ConfigureLink<TestController>(nameof(TestController.GetFromRouteParam), "self")
                 .WithParameterMapping("id", nameof(CustomReturnType.Id))
-            .TypeEnricherBuilder
+            .TypeConfigurationBuilder
             .HyperMediaConfigurationBuilder
-            .ConfigureForType<SubType>()
-            .ConfigureControllerLink<TestController>(nameof(TestController.GetFromQueryParam), "self")
+            .ConfigureType<SubType>()
+            .ConfigureLink<TestController>(nameof(TestController.GetFromQueryParam), "self")
                 .WithParameterMapping("id", nameof(CustomReturnType.Id));
     });
 

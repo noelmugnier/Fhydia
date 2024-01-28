@@ -68,23 +68,23 @@ public class ControllerParser<TController> where TController : Controller
         return endpoints;
     }
 
-    public static string GetControllerEndpointIdentifier(MethodInfo methodInfo, TypeInfo controllerType)
+    private static string GetControllerEndpointIdentifier(MethodInfo methodInfo, TypeInfo controllerType)
     {
         return $"{controllerType.FullName}.{methodInfo.Name}";
     }
 
-    public static string GetControllerEndpointIdentifier(string methodName)
-    {
-        var controllerType = typeof(TController).GetTypeInfo();
-        var methodInfo = controllerType.GetMethod(methodName);
-        if (methodInfo == null)
-        {
-            throw new InvalidOperationException(
-                $"Cannot find method '{methodName}' on Controller '{controllerType.Name}'");
-        }
-
-        return GetControllerEndpointIdentifier(methodInfo, controllerType);
-    }
+    // private static string GetControllerEndpointIdentifier(string methodName)
+    // {
+    //     var controllerType = typeof(TController).GetTypeInfo();
+    //     var methodInfo = controllerType.GetMethod(methodName);
+    //     if (methodInfo == null)
+    //     {
+    //         throw new InvalidOperationException(
+    //             $"Cannot find method '{methodName}' on Controller '{controllerType.Name}'");
+    //     }
+    //
+    //     return GetControllerEndpointIdentifier(methodInfo, controllerType);
+    // }
 
 
     // private static Uri ParseTemplates(MethodInfo methodInfo, TypeInfo controllerType)

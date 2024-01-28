@@ -5,20 +5,20 @@ namespace Fydhia.Library;
 
 public abstract class TypeEnricherBuilder
 {
-    internal abstract TypeEnricherConfiguration Build();
+    internal abstract TypeConfiguration Build();
 }
 
-public class TypeEnricherBuilder<TType> : TypeEnricherBuilder where TType : class, new()
+public class TypeConfigurationBuilder<TType> : TypeEnricherBuilder where TType : class, new()
 {
     public HyperMediaConfigurationBuilder HyperMediaConfigurationBuilder { get; }
     private readonly List<LinkConfigurationBuilder> _linksConfigurationBuilders = new();
 
-    internal TypeEnricherBuilder(HyperMediaConfigurationBuilder hyperMediaConfigurationBuilder)
+    internal TypeConfigurationBuilder(HyperMediaConfigurationBuilder hyperMediaConfigurationBuilder)
     {
         HyperMediaConfigurationBuilder = hyperMediaConfigurationBuilder;
     }
 
-    public LinkConfigurationBuilder<TType, TControllerType> ConfigureControllerLink<TControllerType>(
+    public LinkConfigurationBuilder<TType, TControllerType> ConfigureLink<TControllerType>(
         string methodName, string? rel = null)
         where TControllerType : Controller
     {
@@ -33,9 +33,9 @@ public class TypeEnricherBuilder<TType> : TypeEnricherBuilder where TType : clas
         return linkConfigurationBuilder;
     }
 
-    internal override TypeEnricherConfiguration Build()
+    internal override TypeConfiguration Build()
     {
         var linkConfigurations = _linksConfigurationBuilders.Select(linkBuilder => linkBuilder.Build());
-        return new TypeEnricherConfiguration(typeof(TType).GetTypeInfo(), linkConfigurations);
+        return new TypeConfiguration(typeof(TType).GetTypeInfo(), linkConfigurations);
     }
 }
