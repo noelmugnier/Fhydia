@@ -21,7 +21,7 @@ When your response enter into the dedicated Filter, Fhydia read the configuratio
 
 ## Typed configuration
 
-- [ ] FhydiaConfiguration<T> support (like EF) to keep your configuration separated
+- [x] FhydiaConfiguration<T> support (like EF) to keep your configuration separated
 
 ## Handlers
 

@@ -7,9 +7,14 @@ namespace Fydhia.Library;
 
 public class HyperMediaJsonOutputFormatter : SystemTextJsonOutputFormatter
 {
-    public HyperMediaJsonOutputFormatter(JsonSerializerOptions serializerOptions) : base(serializerOptions)
+    public HyperMediaJsonOutputFormatter(JsonSerializerOptions serializerOptions, MediaTypeCollection mediaTypeCollection) : base(serializerOptions)
     {
         SupportedMediaTypes.Clear();
+
+        foreach (var mediaType in mediaTypeCollection)
+        {
+            SupportedMediaTypes.Add(mediaType);
+        }
     }
 
     public override bool CanWriteResult(OutputFormatterCanWriteContext context)

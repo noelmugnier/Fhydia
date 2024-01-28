@@ -8,6 +8,7 @@ public class TypeConfigurationCollection : List<TypeConfiguration>
     {
         AddRange(types);
     }
+
     public TypeConfiguration? GetConfiguration(Type? typeToConfigure)
     {
         if (typeToConfigure is null)

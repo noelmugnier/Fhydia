@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq.Expressions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Fydhia.Library;
 
@@ -16,10 +17,12 @@ public class ControllerLinkConfigurationBuilder<TType, TControllerType> : LinkCo
     private Dictionary<string, string> _parameterMappings = new();
 
     public TypeConfigurationBuilder<TType> TypeConfigurationBuilder { get; }
+    public HyperMediaConfigurationBuilder HyperMediaConfigurationBuilder { get; }
 
     internal ControllerLinkConfigurationBuilder(TypeConfigurationBuilder<TType> typeConfigurationBuilder)
     {
         TypeConfigurationBuilder = typeConfigurationBuilder;
+        HyperMediaConfigurationBuilder = typeConfigurationBuilder.HyperMediaConfigurationBuilder;
     }
 
     public ControllerLinkConfigurationBuilder<TType, TControllerType> WithRel(string? rel)
@@ -34,23 +37,14 @@ public class ControllerLinkConfigurationBuilder<TType, TControllerType> : LinkCo
         return this;
     }
 
-    public ControllerLinkConfigurationBuilder<TType, TControllerType> WithParameterMapping(string parameterName,
-        string propertyName)
+    public ControllerLinkConfigurationBuilder<TType, TControllerType> WithParameterMapping(Expression<Func<TType, object?>> propertyExpression, string parameterName)
     {
-        _parameterMappings.Add(parameterName, propertyName);
-        return this;
-    }
-
-    public ControllerLinkConfigurationBuilder<TType, TControllerType> WithParameterMappings(
-        IDictionary<string, string> parameterMappings)
-    {
-        foreach (var parameterMapping in parameterMappings)
-        {
-            if (_parameterMappings.ContainsKey(parameterMapping.Key))
-                _parameterMappings.Remove(parameterMapping.Key);
-
-            _parameterMappings.Add(parameterMapping.Key, parameterMapping.Value);
-        }
+        if(propertyExpression.Body is UnaryExpression unaryExpression)
+            _parameterMappings.Add(parameterName, ((MemberExpression)unaryExpression.Operand).Member.Name);
+        else if (propertyExpression.Body is MemberExpression memberExpression)
+            _parameterMappings.Add(parameterName, memberExpression.Member.Name);
+        else
+            throw new InvalidOperationException();
 
         return this;
     }

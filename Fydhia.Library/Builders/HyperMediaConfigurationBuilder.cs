@@ -17,7 +17,14 @@ public class HyperMediaConfigurationBuilder
 
     public TypeConfigurationBuilder<T> ConfigureType<T>() where T : class, new()
     {
-        var typeConfigurationBuilder = new TypeConfigurationBuilder<T>(this);
+        TypeConfigurationBuilder<T>? typeConfigurationBuilder =
+            _typeConfigurationBuilders.SingleOrDefault(type => type.GetTypeToConfigure() == typeof(T)) as
+                TypeConfigurationBuilder<T>;
+
+        if (typeConfigurationBuilder != null)
+            return typeConfigurationBuilder;
+
+        typeConfigurationBuilder = new TypeConfigurationBuilder<T>(this);
         _typeConfigurationBuilders.Add(typeConfigurationBuilder);
 
         return typeConfigurationBuilder;

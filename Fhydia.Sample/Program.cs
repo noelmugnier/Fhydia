@@ -6,19 +6,24 @@ builder.Services.AddSwaggerGen();
 
 builder.Services
     .AddFhydia()
-    .Configure(configBuilder =>
+    .Configure(new []{typeof(OtherTypeConfiguration).Assembly})
+    .Configure(hyperMediaConfigurationBuilder =>
     {
-        configBuilder
+        hyperMediaConfigurationBuilder
             .ConfigureType<CustomReturnType>()
-            .ConfigureLink<TestController>(nameof(TestController.GetFromRouteParam), "self")
-                .WithParameterMapping("id", nameof(CustomReturnType.Id))
-            .TypeConfigurationBuilder
-            .HyperMediaConfigurationBuilder
+            .ConfigureSelfLink<TestController>(controller => controller.GetFromQueryParam)
+                .WithParameterMapping(type => type.Id, "id")
+        .HyperMediaConfigurationBuilder
             .ConfigureType<SubType>()
-            .ConfigureLink<TestController>(nameof(TestController.GetFromQueryParam), "self")
-                .WithParameterMapping("id", nameof(CustomReturnType.Id));
+            .ConfigureSelfLink<TestController>(controller => controller.GetFromQueryParam)
+                .WithParameterMapping(type => type.Id, "id")
+            .HyperMediaConfigurationBuilder
+            .ConfigureType<Other>()
+            .ConfigureLink<TestController>(controller => controller.GetFromQueryParam, "test")
+            .WithParameterMapping(type => type.Id, "id");
     })
-    .AddHalJsonSupport();
+    .AddHalJsonSupport()
+    .Build();
 
 var app = builder.Build();
 
