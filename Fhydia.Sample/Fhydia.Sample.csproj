@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
@@ -15,7 +15,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Fydhia.Library\Fydhia.Library.csproj"/>
+        <ProjectReference Include="..\Fhydia.ControllerActions\Fhydia.ControllerActions.csproj" />
+        <ProjectReference Include="..\Fhydia.MinimalApi\Fhydia.MinimalApi.csproj" />
+        <ProjectReference Include="..\Fydhia.Core\Fydhia.Core.csproj" />
     </ItemGroup>
 
 </Project>

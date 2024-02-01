@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Fhydia.Sample;
 
-[Route("api/[controller]")]
+[Route("api/controller-actions")]
 public class TestController : Controller
 {
     [HttpGet("{id}", Name = "ActionRoute")]
