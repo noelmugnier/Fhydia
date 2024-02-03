@@ -15,8 +15,12 @@ public abstract class LinkConfiguration
     public string? Name { get; init; }
     public bool Templated { get; init; }
 
-    protected LinkConfiguration(string rel, IDictionary<string, string>? parameterMappings = null)
+    protected LinkConfiguration(string rel, IDictionary<string, string>? parameterMappings = null,
+        string name = "", string title = "", bool templated = false)
     {
+        Name = name;
+        Title = title;
+        Templated = templated;
         Rel = rel.ToSnakeCase();
         ParameterMappings = parameterMappings ?? new Dictionary<string, string>();
     }

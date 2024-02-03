@@ -1,12 +1,16 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using Fydhia.Core.Builders;
 using Fydhia.Core.Configurations;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Fydhia.Core.Builders;
+namespace Fhydia.Controllers;
 
-public class NamedLinkConfigurationBuilder<TType> : LinkConfigurationBuilder where TType : class, new()
+public class ActionLinkConfigurationBuilder<TType, TControllerType> : LinkConfigurationBuilder
+    where TControllerType : Controller
+    where TType : class, new()
 {
     private string? _rel;
-    private string _endpointName;
+    private string _methodName;
     private Dictionary<string, string> _parameterMappings = new();
     private string _name;
     private string _title;
@@ -15,46 +19,46 @@ public class NamedLinkConfigurationBuilder<TType> : LinkConfigurationBuilder whe
     public TypeConfigurationBuilder<TType> TypeConfigurationBuilder { get; }
     public HyperMediaConfigurationBuilder HyperMediaConfigurationBuilder { get; }
 
-    internal NamedLinkConfigurationBuilder(TypeConfigurationBuilder<TType> typeConfigurationBuilder, string endpointName, string? rel)
+    internal ActionLinkConfigurationBuilder(TypeConfigurationBuilder<TType> typeConfigurationBuilder, string methodName, string? rel = null)
     {
         TypeConfigurationBuilder = typeConfigurationBuilder;
         HyperMediaConfigurationBuilder = typeConfigurationBuilder.HyperMediaConfigurationBuilder;
 
         WithRel(rel);
-        MapToEndpoint(endpointName);
+        MapToMethod(methodName);
     }
 
-    public NamedLinkConfigurationBuilder<TType> WithRel(string? rel)
+    public ActionLinkConfigurationBuilder<TType, TControllerType> WithRel(string? rel)
     {
         _rel = rel;
         return this;
     }
 
-    public NamedLinkConfigurationBuilder<TType> MapToEndpoint(string endpointName)
+    public ActionLinkConfigurationBuilder<TType, TControllerType> MapToMethod(string methodName)
     {
-        _endpointName = endpointName;
+        _methodName = methodName;
         return this;
     }
 
-    public NamedLinkConfigurationBuilder<TType> WithName(string name)
+    public ActionLinkConfigurationBuilder<TType, TControllerType> WithName(string name)
     {
         _name = name;
         return this;
     }
 
-    public NamedLinkConfigurationBuilder<TType> WithTitle(string title)
+    public ActionLinkConfigurationBuilder<TType, TControllerType> WithTitle(string title)
     {
         _title = title;
         return this;
     }
 
-    public NamedLinkConfigurationBuilder<TType> AsTemplated(bool templated)
+    public ActionLinkConfigurationBuilder<TType, TControllerType> AsTemplated(bool templated)
     {
         _templated = templated;
         return this;
     }
-    
-    public NamedLinkConfigurationBuilder<TType> WithParameterMapping(Expression<Func<TType, object?>> propertyExpression, string parameterName)
+
+    public ActionLinkConfigurationBuilder<TType, TControllerType> WithParameterMapping(Expression<Func<TType, object?>> propertyExpression, string parameterName)
     {
         if(propertyExpression.Body is UnaryExpression unaryExpression)
             _parameterMappings.Add(parameterName, ((MemberExpression)unaryExpression.Operand).Member.Name);
@@ -68,7 +72,9 @@ public class NamedLinkConfigurationBuilder<TType> : LinkConfigurationBuilder whe
     
     internal override LinkConfiguration Build()
     {
-        var linkConfiguration = NamedLinkConfiguration.Create(_rel, _endpointName, _parameterMappings, _name, _title, _templated);
+        var linkConfiguration =
+            ActionLinkConfiguration<TControllerType>.Create(_rel, _methodName, _parameterMappings, _name, _title,
+                _templated);
         return linkConfiguration;
     }
 }

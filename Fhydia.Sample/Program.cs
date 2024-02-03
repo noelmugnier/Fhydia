@@ -34,6 +34,7 @@ builder.Services
                     .HyperMediaConfigurationBuilder
                     .ConfigureType<Other>()
                     .ConfigureLink("SuperTest", "test")
+                    .AsTemplated(true)
                     .WithParameterMapping(type => type.Id, "id")
                     .TypeConfigurationBuilder
                     .ConfigureLink(nameof(DefaultHandler.Test), "super")

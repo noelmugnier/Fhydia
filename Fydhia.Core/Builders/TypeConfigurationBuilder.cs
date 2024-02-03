@@ -21,18 +21,15 @@ public class TypeConfigurationBuilder<TType> : TypeConfigurationBuilder where TT
         HyperMediaConfigurationBuilder = hyperMediaConfigurationBuilder;
     }
 
-    public NamedLinkConfigurationBuilder<TType> ConfigureSelfLink(string name)
+    public NamedLinkConfigurationBuilder<TType> ConfigureSelfLink(string endpointName)
     {
-        return ConfigureLink(name, "self");
+        return ConfigureLink(endpointName, "self");
     }
 
-    public NamedLinkConfigurationBuilder<TType> ConfigureLink(string name, string? rel = null)
+    public NamedLinkConfigurationBuilder<TType> ConfigureLink(string endpointName, string? rel = null)
     {
-        var namedLinkConfigurationBuilder = new NamedLinkConfigurationBuilder<TType>(this);
+        var namedLinkConfigurationBuilder = new NamedLinkConfigurationBuilder<TType>(this, endpointName, rel);
         _linksConfigurationBuilders.Add(namedLinkConfigurationBuilder);
-
-        namedLinkConfigurationBuilder.WithName(name);
-        namedLinkConfigurationBuilder.WithRel(rel);
 
         return namedLinkConfigurationBuilder;
     }
