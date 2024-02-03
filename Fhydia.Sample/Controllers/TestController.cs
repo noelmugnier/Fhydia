@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace Fhydia.Sample;
+namespace Fhydia.Sample.Controllers;
 
 [Route("api/controller-actions")]
 public class TestController : Controller
@@ -20,6 +20,7 @@ public class TestController : Controller
     }
 
     [HttpGet("headers")]
+    [EndpointName("SuperTest")]
     public IEnumerable<CustomReturnType> GetFromHeaderParams([FromHeader] int id)
     {
         return new List<CustomReturnType>

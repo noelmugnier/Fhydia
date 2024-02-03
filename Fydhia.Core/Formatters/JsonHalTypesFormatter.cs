@@ -7,12 +7,18 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Fydhia.Core.Formatters;
 
-public class JsonHalTypeFormatter : IHyperMediaTypeFormatter
+public interface IHyperMediaTypesFormatter
+{
+    public string FormattedMediaType { get; }
+    public void Format(ExpandoObject responseObject, HttpContext httpContext);
+}
+
+public class JsonHalTypesFormatter : IHyperMediaTypesFormatter
 {
     private readonly LinkGenerator _linkGenerator;
     private readonly TypeConfigurationCollection _typeConfigurationCollection;
 
-    public JsonHalTypeFormatter(TypeConfigurationCollection typeConfigurationCollection, LinkGenerator linkGenerator)
+    public JsonHalTypesFormatter(TypeConfigurationCollection typeConfigurationCollection, LinkGenerator linkGenerator)
     {
         _typeConfigurationCollection = typeConfigurationCollection;
         _linkGenerator = linkGenerator;
@@ -41,8 +47,7 @@ public class JsonHalTypeFormatter : IHyperMediaTypeFormatter
             var hyperMediaLink =
                 linkConfiguration.GenerateHyperMediaLink(httpContext, _linkGenerator, responseObjectProperties);
             links.TryAdd(linkConfiguration.Rel,
-                new HyperMediaHalLink(hyperMediaLink.Href, linkConfiguration.Title, linkConfiguration.Name,
-                    linkConfiguration.Templated));
+                new HyperMediaHalLink(hyperMediaLink.Href, linkConfiguration.Templated, linkConfiguration.Title, linkConfiguration.Name));
         }
 
         responseObject.TryAdd("_links", links);

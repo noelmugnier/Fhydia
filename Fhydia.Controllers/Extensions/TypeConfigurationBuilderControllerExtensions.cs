@@ -1,10 +1,10 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
-using Fhydia.ControllerActions.ControllerLink;
+using Fhydia.Controllers.ControllerLink;
 using Fydhia.Core.Builders;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Fhydia.ControllerActions.Extensions;
+namespace Fhydia.Controllers.Extensions;
 
 public static class TypeConfigurationBuilderControllerExtensions
 {
@@ -12,7 +12,7 @@ public static class TypeConfigurationBuilderControllerExtensions
         Expression<Func<TControllerType, Delegate?>> methodExpression)
         where TControllerType : Controller where TType : class, new()
     {
-        return typeBuilder.ConfigureLink<TType, TControllerType>(methodExpression, "self");
+        return typeBuilder.ConfigureLink(methodExpression, "self");
     }
 
     public static ControllerLinkConfigurationBuilder<TType, TControllerType> ConfigureLink<TType, TControllerType>(this TypeConfigurationBuilder<TType> typeBuilder, 
@@ -30,10 +30,9 @@ public static class TypeConfigurationBuilderControllerExtensions
         where TControllerType : Controller where TType : class, new()
     {
         var linkConfigurationBuilder = new ControllerLinkConfigurationBuilder<TType, TControllerType>(typeBuilder);
+        
         linkConfigurationBuilder.WithMethod(methodName);
-
-        if (!string.IsNullOrWhiteSpace(rel))
-            linkConfigurationBuilder.WithRel(rel);
+        linkConfigurationBuilder.WithRel(rel);
 
         typeBuilder.AddLinkBuilder(linkConfigurationBuilder);
         return linkConfigurationBuilder;

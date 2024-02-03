@@ -20,6 +20,22 @@ public class TypeConfigurationBuilder<TType> : TypeConfigurationBuilder where TT
     {
         HyperMediaConfigurationBuilder = hyperMediaConfigurationBuilder;
     }
+
+    public NamedLinkConfigurationBuilder<TType> ConfigureSelfLink(string name)
+    {
+        return ConfigureLink(name, "self");
+    }
+
+    public NamedLinkConfigurationBuilder<TType> ConfigureLink(string name, string? rel = null)
+    {
+        var namedLinkConfigurationBuilder = new NamedLinkConfigurationBuilder<TType>(this);
+        _linksConfigurationBuilders.Add(namedLinkConfigurationBuilder);
+
+        namedLinkConfigurationBuilder.WithName(name);
+        namedLinkConfigurationBuilder.WithRel(rel);
+
+        return namedLinkConfigurationBuilder;
+    }
     
     internal override TypeConfiguration Build()
     {

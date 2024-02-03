@@ -1,5 +1,7 @@
 using Fydhia.Core.Builders;
+using Fydhia.Core.Filters;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,10 +16,9 @@ public static class DependencyInjection
         return builder.Build();
     }
 
-    public static IApplicationBuilder UseFhydia(this IApplicationBuilder app)
+    public static IEndpointRouteBuilder UseFhydia(this IEndpointRouteBuilder app, string? endpointsBasePath = null)
     {
-        var builder = app.ApplicationServices.GetRequiredService<IEnumerable<EndpointDataSource>>();
-        
-        return app;
+        return app.MapGroup(endpointsBasePath ?? string.Empty)
+            .AddEndpointFilter<HyperMediaEndpointFilter>();
     }
 }

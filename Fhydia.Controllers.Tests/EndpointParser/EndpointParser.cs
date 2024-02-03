@@ -1,4 +1,4 @@
-using Fhydia.ControllerActions.Resources;
+using Fhydia.Controllers.Resources;
 using Fydhia.Core.Common;
 using Fydhia.Core.Resources;
 using Microsoft.AspNetCore.Mvc;

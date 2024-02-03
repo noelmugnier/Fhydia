@@ -1,8 +1,9 @@
-using Fhydia.ControllerActions.Extensions;
+using Fhydia.Controllers.Extensions;
+using Fhydia.Sample.Controllers;
 using Fydhia.Core.Builders;
 using Fydhia.Core.Configurations;
 
-namespace Fhydia.Sample;
+namespace Fhydia.Sample.Configurations;
 
 public class OtherTypeConfigurator : ITypeConfigurator<Other>
 {

@@ -3,22 +3,24 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Fydhia.Core.Configurations;
 using Fydhia.Core.Extensions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
-namespace Fydhia.Core;
+namespace Fydhia.Core.Enrichers;
 
-public interface IHyperMediaJsonEnricher
+public interface IHyperMediaObjectEnricher
 {
     void Enrich(ExpandoObject value);
 }
 
-public class HyperMediaJsonEnricher : IHyperMediaJsonEnricher
+public class HyperMediaObjectEnricher : IHyperMediaObjectEnricher
 {
     private readonly JsonSerializerOptions _serializerOptions;
     private readonly TypeConfigurationCollection _typeConfigurationConfigurations;
 
-    public HyperMediaJsonEnricher(HyperMediaConfiguration hyperMediaConfiguration)
+    public HyperMediaObjectEnricher(HyperMediaConfiguration hyperMediaConfiguration, IOptions<JsonOptions> jsonOptions)
     {
-        _serializerOptions = hyperMediaConfiguration.JsonSerializerOptions;
+        _serializerOptions = jsonOptions.Value.JsonSerializerOptions;
         _typeConfigurationConfigurations = hyperMediaConfiguration.ConfiguredTypes;
     }
 

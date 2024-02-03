@@ -1,40 +1,36 @@
-﻿using System.Linq.Expressions;
-using Fydhia.Core.Builders;
+using System.Linq.Expressions;
 using Fydhia.Core.Configurations;
-using Microsoft.AspNetCore.Mvc;
 
-namespace Fhydia.ControllerActions.ControllerLink;
+namespace Fydhia.Core.Builders;
 
-public class ControllerLinkConfigurationBuilder<TType, TControllerType> : LinkConfigurationBuilder
-    where TControllerType : Controller
-    where TType : class, new()
+public class NamedLinkConfigurationBuilder<TType> : LinkConfigurationBuilder where TType : class, new()
 {
-    private string _rel;
-    private string _methodName;
+    private string? _rel;
+    private string _name;
     private Dictionary<string, string> _parameterMappings = new();
 
     public TypeConfigurationBuilder<TType> TypeConfigurationBuilder { get; }
     public HyperMediaConfigurationBuilder HyperMediaConfigurationBuilder { get; }
 
-    internal ControllerLinkConfigurationBuilder(TypeConfigurationBuilder<TType> typeConfigurationBuilder)
+    internal NamedLinkConfigurationBuilder(TypeConfigurationBuilder<TType> typeConfigurationBuilder)
     {
         TypeConfigurationBuilder = typeConfigurationBuilder;
         HyperMediaConfigurationBuilder = typeConfigurationBuilder.HyperMediaConfigurationBuilder;
     }
 
-    public ControllerLinkConfigurationBuilder<TType, TControllerType> WithRel(string? rel)
+    public NamedLinkConfigurationBuilder<TType> WithRel(string? rel)
     {
         _rel = rel;
         return this;
     }
 
-    public ControllerLinkConfigurationBuilder<TType, TControllerType> WithMethod(string methodName)
+    public NamedLinkConfigurationBuilder<TType> WithName(string name)
     {
-        _methodName = methodName;
+        _name = name;
         return this;
     }
 
-    public ControllerLinkConfigurationBuilder<TType, TControllerType> WithParameterMapping(Expression<Func<TType, object?>> propertyExpression, string parameterName)
+    public NamedLinkConfigurationBuilder<TType> WithParameterMapping(Expression<Func<TType, object?>> propertyExpression, string parameterName)
     {
         if(propertyExpression.Body is UnaryExpression unaryExpression)
             _parameterMappings.Add(parameterName, ((MemberExpression)unaryExpression.Operand).Member.Name);
@@ -48,9 +44,7 @@ public class ControllerLinkConfigurationBuilder<TType, TControllerType> : LinkCo
     
     internal override LinkConfiguration Build()
     {
-        var linkConfiguration = ControllerLinkConfiguration<TControllerType>.Create(_methodName, _parameterMappings, _rel);
-        linkConfiguration.ValidateParameterMappings();
-    
+        var linkConfiguration = NamedLinkConfiguration.Create(_rel, _name, _parameterMappings);
         return linkConfiguration;
     }
 }

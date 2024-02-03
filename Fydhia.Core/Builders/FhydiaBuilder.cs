@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Fydhia.Core.Configurations;
+using Fydhia.Core.Enrichers;
 using Fydhia.Core.Formatters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,11 +11,6 @@ namespace Fydhia.Core.Builders;
 public class FhydiaBuilder
 {
     internal readonly IServiceCollection ServiceCollection;
-    internal readonly JsonSerializerOptions SerializerOptions = new ()
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
     
     internal readonly MediaTypeCollection MediaTypeCollection = new();
     private readonly HyperMediaConfigurationBuilder _builder;
@@ -24,23 +18,12 @@ public class FhydiaBuilder
     internal FhydiaBuilder(IServiceCollection serviceCollection)
     {
         ServiceCollection = serviceCollection;
-        _builder = new HyperMediaConfigurationBuilder(SerializerOptions, MediaTypeCollection);
-    }
-
-    public FhydiaBuilder ConfigureJsonSerializerOptions(Func<JsonSerializerOptions, JsonSerializerOptions> configure)
-    {
-        configure(SerializerOptions);
-        
-        //be sure to be consistent between IDictionary (expando or dynamic) and object property naming
-        if(SerializerOptions.DictionaryKeyPolicy != SerializerOptions.PropertyNamingPolicy)
-            SerializerOptions.DictionaryKeyPolicy = SerializerOptions.PropertyNamingPolicy;
-
-        return this;
+        _builder = new HyperMediaConfigurationBuilder(MediaTypeCollection);
     }
 
     public FhydiaBuilder AddHalFormatter()
     {
-        MediaTypeCollection.Add(MediaTypeHeaderValue.Parse(JsonHalTypeFormatter.MediaType));
+        MediaTypeCollection.Add(MediaTypeHeaderValue.Parse(JsonHalTypesFormatter.MediaType));
         return this;
     }
 
@@ -83,8 +66,8 @@ public class FhydiaBuilder
     internal IServiceCollection Build()
     {
         ServiceCollection.AddHttpContextAccessor();
-        ServiceCollection.AddScoped<IHyperMediaJsonEnricher, HyperMediaJsonEnricher>();
-        ServiceCollection.AddScoped<IProvideHyperMediaTypeFormatter, HyperMediaTypeFormatterProvider>();
+        ServiceCollection.AddScoped<IHyperMediaObjectEnricher, HyperMediaObjectEnricher>();
+        ServiceCollection.AddScoped<IProvideHyperMediaTypesFormatter, HyperMediaTypesFormatterProvider>();
 
         ServiceCollection.AddSingleton(_builder.Build());
 

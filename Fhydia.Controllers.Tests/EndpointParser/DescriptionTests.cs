@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using Fhydia.ControllerActions.Resources;
+using Fhydia.Controllers.Resources;
 using Fydhia.Core.Resources;
 using Microsoft.AspNetCore.Mvc;
 using NFluent;

@@ -1,18 +1,15 @@
-﻿using System.Text.Json;
-using Fydhia.Core.Configurations;
+﻿using Fydhia.Core.Configurations;
 using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace Fydhia.Core.Builders;
 
 public class HyperMediaConfigurationBuilder
 {
-    private readonly JsonSerializerOptions _serializerOptions;
     private readonly MediaTypeCollection _supportedMediaTypes;
     private readonly List<TypeConfigurationBuilder> _typeConfigurationBuilders = new();
 
-    internal HyperMediaConfigurationBuilder(JsonSerializerOptions serializerOptions, MediaTypeCollection supportedMediaTypes)
+    internal HyperMediaConfigurationBuilder(MediaTypeCollection supportedMediaTypes)
     {
-        _serializerOptions = serializerOptions;
         _supportedMediaTypes = supportedMediaTypes;
     }
 
@@ -30,9 +27,6 @@ public class HyperMediaConfigurationBuilder
     public HyperMediaConfiguration Build()
     {
         var typeConfigurations = _typeConfigurationBuilders.Select(builder => builder.Build());
-        return new HyperMediaConfiguration(
-            new TypeConfigurationCollection(typeConfigurations),
-            _serializerOptions,
-            _supportedMediaTypes);
+        return new HyperMediaConfiguration(new TypeConfigurationCollection(typeConfigurations), _supportedMediaTypes);
     }
 }

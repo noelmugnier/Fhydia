@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Fydhia.Core.Configurations;
 
-[assembly: InternalsVisibleTo("Fhydia.ControllerActions")]
+[assembly: InternalsVisibleTo("Fhydia.Controllers")]
 [assembly: InternalsVisibleTo("Fhydia.MinimalApi")]
 
 namespace Fydhia.Core.Builders;

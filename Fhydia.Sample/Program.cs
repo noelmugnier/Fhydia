@@ -1,25 +1,25 @@
 using System.Text.Json;
-using Fhydia.ControllerActions;
-using Fhydia.ControllerActions.Extensions;
-using Fhydia.MinimalApi;
+using Fhydia.Controllers.Extensions;
 using Fhydia.Sample;
+using Fhydia.Sample.Configurations;
+using Fhydia.Sample.Controllers;
 using Fydhia.Core;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
+builder.Services.ConfigureHttpJsonOptions(opt =>
+{
+    opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    opt.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+});
 
 builder.Services
     .AddFhydia(fhydia =>
     {
         fhydia
-            .AddMinimalApiSupport()
-            .AddControllerSupport()
-            .ConfigureJsonSerializerOptions(options =>
-            {
-                options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                return options;
-            })
             .Configure(new[] { typeof(OtherTypeConfigurator).Assembly })
             .Configure(configurationBuilder =>
             {
@@ -33,7 +33,10 @@ builder.Services
                     .WithParameterMapping(type => type.Id, "id")
                     .HyperMediaConfigurationBuilder
                     .ConfigureType<Other>()
-                    .ConfigureLink<Other, TestController>(controller => controller.GetFromQueryParam, "test")
+                    .ConfigureLink("SuperTest", "test")
+                    .WithParameterMapping(type => type.Id, "id")
+                    .TypeConfigurationBuilder
+                    .ConfigureLink(nameof(DefaultHandler.Test), "super")
                     .WithParameterMapping(type => type.Id, "id");
             })
             .AddHalFormatter();
@@ -43,19 +46,23 @@ var app = builder.Build();
 
 app.UseRouting();
 
-app.MapGet("/api/minimal-api/{id}", (int id) => Results.Extensions.HyperMedia(
-    new CustomReturnType
-    {
-        Count = id,
-        Inner = new SubType()
+var router = app.UseFhydia();
+
+router.MapControllers();
+
+router.MapGet("/api/minimal-api/{id}", DefaultHandler.Test)
+    .WithName(nameof(DefaultHandler.Test));
+
+router.MapGet("/api/minimal-api/test", () => 
+    TypedResults.Ok(new CustomReturnType
         {
-            Uber = new CustomReturnType()
-        }
-    })).WithName("test");
-
-app.MapDefaultControllerRoute();
-
-app.UseFhydia();
+            Count = 5,
+            Inner = new SubType()
+            {
+                Uber = new CustomReturnType()
+            }
+        }))
+    .WithName("sample");
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -66,5 +73,20 @@ namespace Fhydia.Sample
 {
     public partial class Program
     {
+    }
+
+    class DefaultHandler
+    {
+        public static Ok<CustomReturnType> Test(int id)
+        {
+            return TypedResults.Ok(new CustomReturnType
+                {
+                    Count = id,
+                    Inner = new SubType()
+                    {
+                        Uber = new CustomReturnType()
+                    }
+                });
+        }
     }
 }

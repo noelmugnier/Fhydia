@@ -15,6 +15,11 @@ public static class TypeInfoExtensions
         return propertyInfo.GetCustomAttribute<DescriptionAttribute>()?.Description;
     }
 
+    public static string? GetTypeDescription(this MethodInfo methodInfo)
+    {
+        return methodInfo.GetCustomAttribute<DescriptionAttribute>()?.Description;
+    }
+
     public static string? GetTypeDescription(this Type type)
     {
         return type.GetCustomAttribute<DescriptionAttribute>()?.Description;

@@ -5,13 +5,9 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fhydia.Sample", "Fhydia.Sample\Fhydia.Sample.csproj", "{CDC1060D-9560-41CD-A77E-EE8C998010E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fhydia.ControllerActions.Tests", "Fhydia.ControllerActions.Tests\Fhydia.ControllerActions.Tests.csproj", "{7A07715B-7EBC-4D2C-8391-CBE575800D5A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fydhia.Core", "Fydhia.Core\Fydhia.Core.csproj", "{A5B2DA9D-DC71-4757-9E13-B22EF4EEE2D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fhydia.ControllerActions", "Fhydia.ControllerActions\Fhydia.ControllerActions.csproj", "{3F399B70-614D-4D5B-A784-5645227CE332}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fhydia.MinimalApi", "Fhydia.MinimalApi\Fhydia.MinimalApi.csproj", "{4424124C-5F2D-441C-900D-EB41DA11EFA2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fhydia.Controllers", "Fhydia.Controllers\Fhydia.Controllers.csproj", "{3F399B70-614D-4D5B-A784-5645227CE332}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,10 +22,6 @@ Global
 		{CDC1060D-9560-41CD-A77E-EE8C998010E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDC1060D-9560-41CD-A77E-EE8C998010E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDC1060D-9560-41CD-A77E-EE8C998010E9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7A07715B-7EBC-4D2C-8391-CBE575800D5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7A07715B-7EBC-4D2C-8391-CBE575800D5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7A07715B-7EBC-4D2C-8391-CBE575800D5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7A07715B-7EBC-4D2C-8391-CBE575800D5A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A5B2DA9D-DC71-4757-9E13-B22EF4EEE2D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A5B2DA9D-DC71-4757-9E13-B22EF4EEE2D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A5B2DA9D-DC71-4757-9E13-B22EF4EEE2D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -38,10 +30,6 @@ Global
 		{3F399B70-614D-4D5B-A784-5645227CE332}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F399B70-614D-4D5B-A784-5645227CE332}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F399B70-614D-4D5B-A784-5645227CE332}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4424124C-5F2D-441C-900D-EB41DA11EFA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4424124C-5F2D-441C-900D-EB41DA11EFA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4424124C-5F2D-441C-900D-EB41DA11EFA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4424124C-5F2D-441C-900D-EB41DA11EFA2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
