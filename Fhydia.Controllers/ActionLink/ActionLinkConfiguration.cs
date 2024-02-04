@@ -1,12 +1,11 @@
-﻿using System.Reflection;
+﻿using System.Dynamic;
+using System.Reflection;
 using Fhydia.Controllers.Extensions;
-using Fydhia.Core.Common;
 using Fydhia.Core.Configurations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Fhydia.Controllers;
 
@@ -33,38 +32,29 @@ public class ActionLinkConfiguration<TControllerType> : LinkConfiguration
                 $"Method name must be provided to build a link configuration for controller {typeof(TControllerType).FullName}");
         }
 
-        var controllerName = typeof(TControllerType).GetTypeInfo().GetControllerClassName();
+        var controllerTypeInfo = typeof(TControllerType).GetTypeInfo();
+        var method = controllerTypeInfo.GetMethod(methodName);
+        if(method is null)
+        {
+            throw new ArgumentException(
+                $"Method {methodName} not found on controller {typeof(TControllerType).FullName}");
+        }
+
+        var controllerName = controllerTypeInfo.GetControllerClassName();
         return new ActionLinkConfiguration<TControllerType>(rel, methodName, controllerName, parameterMappings, name, title, templated);
     }
 
-    public override HyperMediaLink GenerateHyperMediaLink(HttpContext httpContext, LinkGenerator linkGenerator,
-        IDictionary<string, object?> responseObjectProperties)
+    protected override string? GenerateNonTemplatedPath(HttpContext httpContext, LinkGenerator linkGenerator, ExpandoObject routeValues,
+        LinkOptions linkOptions)
     {
-        var routeBuilder = httpContext.RequestServices.GetRequiredService<EndpointDataSource>();
-
-        var routeEndpoint = GetRouteEndpoint(routeBuilder, _methodName, _controllerName);
-        if (routeEndpoint == null)
-        {
-            throw new InvalidOperationException($"Endpoint with method {_methodName} on controller {_controllerName} not found");
-        }
-
-        if (Templated)
-        {
-            return new HyperMediaLink($"{httpContext.Request.Scheme}://{httpContext.Request.Host}{routeEndpoint.RoutePattern.RawText}", Templated);
-        }
-
-        var routeValues = BuildActionRouteValues(responseObjectProperties);
-        var path = linkGenerator.GetUriByAction(httpContext, _methodName, _controllerName, routeValues,
-            options: new LinkOptions { LowercaseUrls = true, LowercaseQueryStrings = true });
-
-        return new HyperMediaLink(path);
+        return linkGenerator.GetPathByAction(httpContext, _methodName, _controllerName, routeValues, options: linkOptions);
     }
 
-    private RouteEndpoint? GetRouteEndpoint(EndpointDataSource routeBuilder, string methodName, string controllerName)
+    protected override RouteEndpoint? GetRouteEndpoint(EndpointDataSource routeBuilder)
     {
         var routeEndpoint = routeBuilder.Endpoints.FirstOrDefault(endpoint =>
-            endpoint.Metadata.GetMetadata<ControllerActionDescriptor>().ControllerName == controllerName
-            && endpoint.Metadata.GetMetadata<ControllerActionDescriptor>().MethodInfo.Name == methodName) as RouteEndpoint;
+            endpoint.Metadata.GetMetadata<ControllerActionDescriptor>().ControllerName == _controllerName
+            && endpoint.Metadata.GetMetadata<ControllerActionDescriptor>().MethodInfo.Name == _methodName) as RouteEndpoint;
 
         return routeEndpoint;
     }

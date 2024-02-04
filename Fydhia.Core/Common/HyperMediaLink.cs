@@ -1,3 +1,16 @@
-﻿namespace Fydhia.Core.Common;
+﻿using Microsoft.AspNetCore.Http;
 
-public record HyperMediaLink(string Href, bool Templated = false);
+namespace Fydhia.Core.Common;
+
+public record HyperMediaLink
+{
+    public HyperMediaLink(HttpRequest httpRequest, string path, bool templated = false)
+    {
+        Href = $"{httpRequest.Scheme}://{httpRequest.Host}{path}";
+        Templated = templated;
+    }
+
+    public readonly bool Templated;
+
+    public readonly string Href;
+};

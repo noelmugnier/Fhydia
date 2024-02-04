@@ -1,9 +1,6 @@
-using Fydhia.Core.Common;
+using System.Dynamic;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Fydhia.Core.Configurations;
 
@@ -29,30 +26,12 @@ public class NamedLinkConfiguration : LinkConfiguration
         return new NamedLinkConfiguration(rel ?? endpointName, endpointName, parameterMappings, name, title, templated);
     }
 
-    public override HyperMediaLink GenerateHyperMediaLink(HttpContext httpContext, LinkGenerator linkGenerator,
-        IDictionary<string, object?> responseObjectProperties)
+    protected override string? GenerateNonTemplatedPath(HttpContext httpContext, LinkGenerator linkGenerator, ExpandoObject routeValues, LinkOptions linkOptions)
     {
-        var routeBuilder = httpContext.RequestServices.GetRequiredService<EndpointDataSource>();
-
-        var routeEndpoint = GetRouteEndpoint(routeBuilder, _endpointName);
-        if (routeEndpoint == null)
-        {
-            throw new InvalidOperationException($"Endpoint with name {_endpointName} not found");
-        }
-
-        if (Templated)
-        {
-            return new HyperMediaLink($"{httpContext.Request.Scheme}://{httpContext.Request.Host}{routeEndpoint.RoutePattern.RawText}", Templated);
-        }
-
-        var routeValues = BuildActionRouteValues(responseObjectProperties);
-        var path = linkGenerator.GetUriByName(httpContext, _endpointName, routeValues,
-            options: new LinkOptions { LowercaseUrls = true, LowercaseQueryStrings = true });
-        
-        return new HyperMediaLink(path);
+        return linkGenerator.GetUriByName(httpContext, _endpointName, routeValues, options: linkOptions);
     }
 
-    private RouteEndpoint? GetRouteEndpoint(EndpointDataSource routeBuilder, string endpointName)
+    protected override RouteEndpoint? GetRouteEndpoint(EndpointDataSource routeBuilder)
     {
         foreach (var endpoint in routeBuilder.Endpoints)
         {
@@ -61,8 +40,8 @@ public class NamedLinkConfiguration : LinkConfiguration
             if (endpointNameMetadata == null && endpointNameAttribute == null)
                 continue;
 
-            if (endpointNameMetadata?.EndpointName != endpointName &&
-                endpointNameAttribute?.EndpointName != endpointName)
+            if (endpointNameMetadata?.EndpointName != _endpointName &&
+                endpointNameAttribute?.EndpointName != _endpointName)
                 continue;
 
             return endpoint as RouteEndpoint;
