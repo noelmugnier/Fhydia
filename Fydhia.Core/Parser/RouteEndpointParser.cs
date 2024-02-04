@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 
 namespace Fhydia.Controllers;
@@ -14,6 +15,24 @@ public class RouteEndpointParser
     public IReadOnlyCollection<RequestParameterDescriptor> GetParameters(RouteEndpoint routeEndpoint)
     {
         var requestParameterDescriptors = new List<RequestParameterDescriptor>();
+        var methodInfo = routeEndpoint.Metadata.GetMetadata<MethodInfo>();
+        if(methodInfo is not null)
+        {
+            var parameters = methodInfo.GetParameters();
+            foreach (var parameterInfo in parameters)
+            {
+                var bindingSourceMetadata = parameterInfo.GetCustomAttributes().OfType<IBindingSourceMetadata>().FirstOrDefault();
+                //TODO get parameter name from FromRoute or FromQuery or FromHeader attribute
+                requestParameterDescriptors.Add(new RequestParameterDescriptor()
+                {
+                    ParameterInfo = parameterInfo,
+                    BindingSource = bindingSourceMetadata?.BindingSource?.Id,
+                });
+            }
+
+            return requestParameterDescriptors;
+        }
+
         var controllerActionDescriptor = routeEndpoint.Metadata.GetMetadata<ControllerActionDescriptor>();
         if (controllerActionDescriptor is null)
             return requestParameterDescriptors;
@@ -23,6 +42,7 @@ public class RouteEndpointParser
             if(parameter is not ControllerParameterDescriptor parameterDescriptor)
                 continue;
 
+            //TODO get parameter name from FromRoute or FromQuery or FromHeader attribute
             requestParameterDescriptors.Add(new RequestParameterDescriptor()
             {
                 ParameterInfo = parameterDescriptor.ParameterInfo,
@@ -53,9 +73,17 @@ public class RouteEndpointParser
             return produceResponseAttribute.Type.GetTypeInfo();
         }
 
+        var methodInfo = routeEndpoint.Metadata.GetMetadata<MethodInfo>();
+        if (methodInfo is not null)
+        {
+            return GetMethodConcreteReturnType(methodInfo);
+        }
+
         var controllerActionDescriptor = routeEndpoint.Metadata.GetMetadata<ControllerActionDescriptor>();
         if (controllerActionDescriptor is null)
+        {
             return typeof(object).GetTypeInfo();
+        }
 
         return GetMethodConcreteReturnType(controllerActionDescriptor.MethodInfo);
     }
