@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Fhydia.Controllers.Extensions;
 using Fhydia.Sample;
 using Fhydia.Sample.Configurations;
 using Fhydia.Sample.Controllers;
@@ -26,11 +25,11 @@ builder.Services
             {
                 configurationBuilder
                     .ConfigureType<CustomReturnType>()
-                    .ConfigureSelfLink<CustomReturnType, TestController>(controller => controller.GetFromQueryParam)
+                    .ConfigureSelfLink<TestController>(controller => controller.GetFromQueryParam)
                     .WithParameterMapping(type => type.Id, "id")
                     .HyperMediaConfigurationBuilder
                     .ConfigureType<SubType>()
-                    .ConfigureSelfLink<SubType, TestController>(controller => controller.GetFromRouteParam)
+                    .ConfigureSelfLink<TestController>(controller => controller.GetFromRouteParam)
                     .WithParameterMapping(type => type.Id, "id")
                     .HyperMediaConfigurationBuilder
                     .ConfigureType<Other>()
@@ -52,7 +51,7 @@ var router = app.UseFhydia();
 
 router.MapControllers();
 
-router.MapGet("/api/minimal-api/{id:int}", DefaultHandler.Test)
+router.MapGet("/api/minimal-api/{id}", DefaultHandler.Test)
     .WithName(nameof(DefaultHandler.Test));
 
 router.MapGet("/api/minimal-api/test", () => 
@@ -79,7 +78,7 @@ namespace Fhydia.Sample
 
     class DefaultHandler
     {
-        public static Ok<CustomReturnType> Test([FromRoute] int id)
+        public static Ok<CustomReturnType> Test([FromRoute(Name = "id")] int id)
         {
             return TypedResults.Ok(new CustomReturnType
                 {

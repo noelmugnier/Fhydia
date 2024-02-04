@@ -3,6 +3,7 @@ using Fydhia.Core.Configurations;
 using Fydhia.Core.Enrichers;
 using Fydhia.Core.Formatters;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
@@ -69,7 +70,7 @@ public class FhydiaBuilder
         ServiceCollection.AddScoped<IHyperMediaObjectEnricher, HyperMediaObjectEnricher>();
         ServiceCollection.AddScoped<IProvideHyperMediaTypesFormatter, HyperMediaTypesFormatterProvider>();
 
-        ServiceCollection.AddSingleton(_builder.Build());
+        ServiceCollection.AddSingleton<HyperMediaConfiguration>(provider => _builder.Build(provider.GetRequiredService<EndpointDataSource>()));
 
         return ServiceCollection;
     }

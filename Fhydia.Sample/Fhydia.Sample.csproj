@@ -15,7 +15,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Fhydia.Controllers\Fhydia.Controllers.csproj" />
         <ProjectReference Include="..\Fydhia.Core\Fydhia.Core.csproj" />
     </ItemGroup>
 

@@ -1,11 +1,15 @@
-﻿using System.Reflection;
+﻿using System.Linq.Expressions;
+using System.Reflection;
+using Fhydia.Controllers;
 using Fydhia.Core.Configurations;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace Fydhia.Core.Builders;
 
 public abstract class TypeConfigurationBuilder
 {
-    internal abstract TypeConfiguration Build();
+    internal abstract TypeConfiguration Build(EndpointDataSource endpointDataSource);
     internal abstract Type GetTypeToConfigure();
 }
 
@@ -33,10 +37,28 @@ public class TypeConfigurationBuilder<TType> : TypeConfigurationBuilder where TT
 
         return namedLinkConfigurationBuilder;
     }
-    
-    internal override TypeConfiguration Build()
+    public ActionLinkConfigurationBuilder<TType, TControllerType> ConfigureSelfLink<TControllerType>(
+        Expression<Func<TControllerType, Delegate?>> methodExpression)
+        where TControllerType : Controller
     {
-        var linkConfigurations = _linksConfigurationBuilders.Select(linkBuilder => linkBuilder.Build());
+        return ConfigureLink(methodExpression, "self");
+    }
+
+    public ActionLinkConfigurationBuilder<TType, TControllerType> ConfigureLink<TControllerType>(
+        Expression<Func<TControllerType, Delegate?>> methodExpression, string? rel = null)
+        where TControllerType : Controller
+    {
+        var unaryExpression = (UnaryExpression)methodExpression.Body;
+        var methodCallExpression = (MethodCallExpression)unaryExpression.Operand;
+        var constantExpression = (ConstantExpression)methodCallExpression.Object!;
+        var methodInfo = (MethodInfo)constantExpression.Value!;
+
+        return ConfigureLink<TControllerType>(methodInfo.Name, rel);
+    }
+    
+    internal override TypeConfiguration Build(EndpointDataSource endpointDataSource)
+    {
+        var linkConfigurations = _linksConfigurationBuilders.Select(linkBuilder => linkBuilder.Build(endpointDataSource));
         return new TypeConfiguration(TypeToConfigure.GetTypeInfo(), linkConfigurations);
     }
 
@@ -45,8 +67,12 @@ public class TypeConfigurationBuilder<TType> : TypeConfigurationBuilder where TT
         return TypeToConfigure;
     }
 
-    internal void AddLinkBuilder(LinkConfigurationBuilder linkConfigurationBuilder)
+    private ActionLinkConfigurationBuilder<TType, TControllerType> ConfigureLink<TControllerType>(string methodName, string? rel = null)
+        where TControllerType : Controller
     {
+        var linkConfigurationBuilder = new ActionLinkConfigurationBuilder<TType, TControllerType>(this, methodName, rel);
+
         _linksConfigurationBuilders.Add(linkConfigurationBuilder);
+        return linkConfigurationBuilder;
     }
 }

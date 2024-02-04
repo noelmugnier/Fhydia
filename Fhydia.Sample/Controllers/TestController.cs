@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fhydia.Sample.Controllers;
@@ -6,17 +7,18 @@ namespace Fhydia.Sample.Controllers;
 public class TestController : Controller
 {
     [HttpGet("{id}", Name = "ActionRoute")]
-    public CustomReturnType GetFromRouteParam([FromRoute] int id)
+    public ActionResult GetFromRouteParam([FromRoute] int id)
     {
-        return new CustomReturnType
-            { Id = Guid.NewGuid(), Value = "GetFromRouteParam", Count = 1, Inner = new() { Uber = new() } };
+        return Ok(
+        new CustomReturnType
+            { Id = Guid.NewGuid(), Value = "GetFromRouteParam", Count = 1, Inner = new() { Uber = new() } });
     }
 
     [HttpGet("query", Name = "ActionQuery")]
-    public IEnumerable<CustomReturnType> GetFromQueryParam([FromQuery] int id)
+    public Results<Ok<List<CustomReturnType>>, BadRequest> GetFromQueryParam([FromQuery(Name = "temp")] int id)
     {
-        return new List<CustomReturnType>
-            { new() { Id = Guid.NewGuid(), Value = "GetFromQueryParam", Count = 2, Inner = new() } };
+        return TypedResults.Ok(new List<CustomReturnType>
+            { new() { Id = Guid.NewGuid(), Value = "GetFromQueryParam", Count = 2, Inner = new() } });
     }
 
     [HttpGet("headers")]

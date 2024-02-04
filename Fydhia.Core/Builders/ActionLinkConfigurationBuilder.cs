@@ -1,7 +1,11 @@
 ﻿using System.Linq.Expressions;
+using System.Reflection;
 using Fydhia.Core.Builders;
 using Fydhia.Core.Configurations;
+using Fydhia.Core.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Routing;
 
 namespace Fhydia.Controllers;
 
@@ -15,6 +19,9 @@ public class ActionLinkConfigurationBuilder<TType, TControllerType> : LinkConfig
     private string _name;
     private string _title;
     private bool _templated;
+
+    private TypeInfo _controllerType = typeof(TControllerType).GetTypeInfo();
+    private string _controllerName => _controllerType.GetControllerClassName();
 
     public TypeConfigurationBuilder<TType> TypeConfigurationBuilder { get; }
     public HyperMediaConfigurationBuilder HyperMediaConfigurationBuilder { get; }
@@ -70,11 +77,44 @@ public class ActionLinkConfigurationBuilder<TType, TControllerType> : LinkConfig
         return this;
     }
     
-    internal override LinkConfiguration Build()
+    internal override LinkConfiguration Build(EndpointDataSource endpointDataSource)
     {
-        var linkConfiguration =
-            ActionLinkConfiguration<TControllerType>.Create(_rel, _methodName, _parameterMappings, _name, _title,
-                _templated);
-        return linkConfiguration;
+        if (string.IsNullOrWhiteSpace(_methodName))
+        {
+            throw new ArgumentException($"Method name must be provided to build a link configuration for controller {typeof(TControllerType).FullName}");
+        }
+
+        var method = _controllerType.GetMethod(_methodName);
+        if(method is null)
+        {
+            throw new ArgumentException($"Method {_methodName} not found on controller {typeof(TControllerType).FullName}");
+        }
+
+        var routeEndpoint = GetRouteEndpoint(endpointDataSource);
+        if(routeEndpoint is null)
+        {
+            throw new InvalidOperationException($"Endpoint with method {_methodName} on controller {_controllerName} not found");
+        }
+
+        var routeEndpointParser = new RouteEndpointParser();
+
+        return new ActionLinkConfiguration<TControllerType>(_rel, _methodName, _controllerName, _parameterMappings)
+            {
+                Name = _name,
+                Title = _title,
+                Templated = _templated,
+                ReturnType = routeEndpointParser.GetReturnedType(routeEndpoint),
+                Parameters = routeEndpointParser.GetParameters(routeEndpoint),
+                TemplatePath = routeEndpoint.RoutePattern.RawText
+            };
+    }
+
+    private RouteEndpoint? GetRouteEndpoint(EndpointDataSource routeBuilder)
+    {
+        var routeEndpoint = routeBuilder.Endpoints.FirstOrDefault(endpoint =>
+            endpoint.Metadata.GetMetadata<ControllerActionDescriptor>().ControllerName == _controllerName
+            && endpoint.Metadata.GetMetadata<ControllerActionDescriptor>().MethodInfo.Name == _methodName) as RouteEndpoint;
+
+        return routeEndpoint;
     }
 }

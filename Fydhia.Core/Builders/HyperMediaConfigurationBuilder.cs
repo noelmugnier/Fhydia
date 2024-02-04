@@ -1,5 +1,6 @@
 ﻿using Fydhia.Core.Configurations;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Routing;
 
 namespace Fydhia.Core.Builders;
 
@@ -24,9 +25,9 @@ public class HyperMediaConfigurationBuilder
         return typeConfigurationBuilder;
     }
 
-    public HyperMediaConfiguration Build()
+    public HyperMediaConfiguration Build(EndpointDataSource endpointDataSource)
     {
-        var typeConfigurations = _typeConfigurationBuilders.Select(builder => builder.Build());
+        var typeConfigurations = _typeConfigurationBuilders.Select(builder => builder.Build(endpointDataSource));
         return new HyperMediaConfiguration(new TypeConfigurationCollection(typeConfigurations), _supportedMediaTypes);
     }
 }

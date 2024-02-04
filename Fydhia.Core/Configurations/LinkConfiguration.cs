@@ -1,9 +1,9 @@
 using System.Dynamic;
+using System.Reflection;
 using Fydhia.Core.Common;
 using Fydhia.Core.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Fydhia.Core.Configurations;
 
@@ -11,17 +11,23 @@ public abstract class LinkConfiguration
 {
     protected readonly IDictionary<string, string> ParameterMappings;
 
-    public readonly string Rel;
-    public readonly string? Title;
-    public readonly string? Name;
-    public readonly bool Templated;
-
-    protected LinkConfiguration(string rel, IDictionary<string, string>? parameterMappings = null,
-        string name = "", string title = "", bool templated = false)
+    protected readonly LinkOptions LinkOptions = new()
     {
-        Name = name;
-        Title = title;
-        Templated = templated;
+        LowercaseUrls = true,
+        LowercaseQueryStrings = true,
+        AppendTrailingSlash = false
+    };
+
+    public string Rel { get; }
+    public string? Title { get; internal init; }
+    public string? Name { get; internal init; }
+    public bool? Templated { get; internal init; }
+    public string? TemplatePath { get; internal init; }
+    public TypeInfo? ReturnType { get; internal init; }
+    public IReadOnlyCollection<RequestParameterDescriptor> Parameters { get; internal init; }
+
+    protected LinkConfiguration(string rel, IDictionary<string, string>? parameterMappings = null)
+    {
         Rel = rel.ToSnakeCase();
         ParameterMappings = parameterMappings ?? new Dictionary<string, string>();
     }
@@ -29,34 +35,18 @@ public abstract class LinkConfiguration
     public HyperMediaLink GenerateHyperMediaLink(HttpContext httpContext, LinkGenerator linkGenerator,
         IDictionary<string, object?> responseObjectProperties)
     {
-        var routeBuilder = httpContext.RequestServices.GetRequiredService<EndpointDataSource>();
-
-        var routeEndpoint = GetRouteEndpoint(routeBuilder);
-        if (routeEndpoint == null)
+        if (Templated.HasValue && Templated.Value)
         {
-            throw new InvalidOperationException($"RouteEndpoint not found");
-        }
-
-        if (Templated)
-        {
-            return new HyperMediaLink(httpContext.Request, routeEndpoint.RoutePattern.RawText, Templated);
+            return new HyperMediaLink(httpContext.Request, TemplatePath, ReturnType, Parameters, Templated.Value);
         }
 
         var routeValues = BuildRouteValues(responseObjectProperties);
-        var path = GenerateNonTemplatedPath(httpContext, linkGenerator, routeValues, new LinkOptions
-        {
-            LowercaseUrls = true,
-            LowercaseQueryStrings = true,
-            AppendTrailingSlash = false
-        });
+        var path = GenerateLink(httpContext, linkGenerator, routeValues);
 
-        return new HyperMediaLink(httpContext.Request, path);
+        return new HyperMediaLink(httpContext.Request, path, ReturnType, Parameters);
     }
 
-    protected abstract string? GenerateNonTemplatedPath(HttpContext httpContext, LinkGenerator linkGenerator,
-        ExpandoObject routeValues, LinkOptions linkOptions);
-
-    protected abstract RouteEndpoint? GetRouteEndpoint(EndpointDataSource routeBuilder);
+    protected abstract string? GenerateLink(HttpContext httpContext, LinkGenerator linkGenerator, ExpandoObject routeValues);
 
     private ExpandoObject BuildRouteValues(IDictionary<string, object?> responseObjectProperties)
     {
@@ -73,4 +63,10 @@ public abstract class LinkConfiguration
 
         return result;
     }
+}
+
+public class RequestParameterDescriptor
+{
+    public ParameterInfo? ParameterInfo { get; init; }
+    public string? BindingSource { get; init; }
 }

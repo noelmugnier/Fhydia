@@ -1,12 +1,9 @@
-using System.Runtime.CompilerServices;
 using Fydhia.Core.Configurations;
-
-[assembly: InternalsVisibleTo("Fhydia.Controllers")]
-[assembly: InternalsVisibleTo("Fhydia.MinimalApi")]
+using Microsoft.AspNetCore.Routing;
 
 namespace Fydhia.Core.Builders;
 
 public abstract class LinkConfigurationBuilder
 {
-    internal abstract LinkConfiguration Build();
+    internal abstract LinkConfiguration Build(EndpointDataSource endpointDataSource);
 }
