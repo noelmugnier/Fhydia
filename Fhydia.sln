@@ -7,7 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fhydia.Sample", "Fhydia.Sam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fydhia.Core", "Fydhia.Core\Fydhia.Core.csproj", "{A5B2DA9D-DC71-4757-9E13-B22EF4EEE2D5}"
 EndProject
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

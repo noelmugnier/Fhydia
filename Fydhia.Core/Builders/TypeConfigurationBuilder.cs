@@ -27,7 +27,7 @@ public class TypeConfigurationBuilder<TType> : TypeConfigurationBuilder where TT
 
     public NamedLinkConfigurationBuilder<TType> ConfigureSelfLink(string endpointName)
     {
-        return ConfigureLink(endpointName, "self");
+        return ConfigureLink(endpointName, LinkConfiguration.SelfLinkRel);
     }
 
     public NamedLinkConfigurationBuilder<TType> ConfigureLink(string endpointName, string? rel = null)
@@ -37,11 +37,12 @@ public class TypeConfigurationBuilder<TType> : TypeConfigurationBuilder where TT
 
         return namedLinkConfigurationBuilder;
     }
+
     public ActionLinkConfigurationBuilder<TType, TControllerType> ConfigureSelfLink<TControllerType>(
         Expression<Func<TControllerType, Delegate?>> methodExpression)
         where TControllerType : Controller
     {
-        return ConfigureLink(methodExpression, "self");
+        return ConfigureLink(methodExpression, LinkConfiguration.SelfLinkRel);
     }
 
     public ActionLinkConfigurationBuilder<TType, TControllerType> ConfigureLink<TControllerType>(

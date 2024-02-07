@@ -90,6 +90,7 @@ public class NamedLinkConfigurationBuilder<TType> : LinkConfigurationBuilder whe
             Templated = _templated,
             ReturnType = routeEndpointParser.GetReturnedType(routeEndpoint),
             Parameters = routeEndpointParser.GetParameters(routeEndpoint),
+            HttpMethod = routeEndpointParser.GetHttpMethod(routeEndpoint),
             TemplatePath = routeEndpoint.RoutePattern.RawText
         };
     }

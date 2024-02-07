@@ -9,7 +9,7 @@ namespace Fydhia.Core.Configurations;
 
 public abstract class LinkConfiguration
 {
-    protected readonly IDictionary<string, string> ParameterMappings;
+    private readonly IDictionary<string, string> _parameterMappings;
 
     protected readonly LinkOptions LinkOptions = new()
     {
@@ -24,12 +24,16 @@ public abstract class LinkConfiguration
     public bool? Templated { get; internal init; }
     public string? TemplatePath { get; internal init; }
     public TypeInfo? ReturnType { get; internal init; }
+    public string HttpMethod { get; internal init; }
     public IReadOnlyCollection<RequestParameterDescriptor> Parameters { get; internal init; }
+
+
+    public const string SelfLinkRel = "self";
 
     protected LinkConfiguration(string rel, IDictionary<string, string>? parameterMappings = null)
     {
         Rel = rel.ToSnakeCase();
-        ParameterMappings = parameterMappings ?? new Dictionary<string, string>();
+        _parameterMappings = parameterMappings ?? new Dictionary<string, string>();
     }
 
     public HyperMediaLink GenerateHyperMediaLink(HttpContext httpContext, LinkGenerator linkGenerator,
@@ -37,13 +41,13 @@ public abstract class LinkConfiguration
     {
         if (Templated.HasValue && Templated.Value)
         {
-            return new HyperMediaLink(httpContext.Request, TemplatePath, ReturnType, Parameters, Templated.Value);
+            return new HyperMediaLink(httpContext.Request, TemplatePath, ReturnType, Parameters, HttpMethod, Templated.Value);
         }
 
         var routeValues = BuildRouteValues(responseObjectProperties);
         var path = GenerateLink(httpContext, linkGenerator, routeValues);
 
-        return new HyperMediaLink(httpContext.Request, path, ReturnType, Parameters);
+        return new HyperMediaLink(httpContext.Request, path, ReturnType, Parameters, HttpMethod);
     }
 
     protected abstract string? GenerateLink(HttpContext httpContext, LinkGenerator linkGenerator, ExpandoObject routeValues);
@@ -51,7 +55,7 @@ public abstract class LinkConfiguration
     private ExpandoObject BuildRouteValues(IDictionary<string, object?> responseObjectProperties)
     {
         var result = new ExpandoObject();
-        foreach (var parameterMapping in ParameterMappings)
+        foreach (var parameterMapping in _parameterMappings)
         {
             if (!responseObjectProperties.TryGetValue(parameterMapping.Value, out var value))
             {
@@ -63,10 +67,4 @@ public abstract class LinkConfiguration
 
         return result;
     }
-}
-
-public class RequestParameterDescriptor
-{
-    public ParameterInfo? ParameterInfo { get; init; }
-    public string? BindingSource { get; init; }
 }

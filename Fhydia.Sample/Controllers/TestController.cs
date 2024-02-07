@@ -23,7 +23,7 @@ public class TestController : Controller
 
     [HttpGet("headers")]
     [EndpointName("SuperTest")]
-    public IEnumerable<CustomReturnType> GetFromHeaderParams([FromHeader] int id)
+    public IEnumerable<CustomReturnType> GetFromHeaderParams([FromHeader(Name = "HeaderName")] int id)
     {
         return new List<CustomReturnType>
             { new() { Id = Guid.NewGuid(), Value = "GetFromHeaderParams", Count = 3, Inner = new() } };

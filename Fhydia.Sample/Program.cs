@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Fhydia.Sample;
 using Fhydia.Sample.Configurations;
 using Fhydia.Sample.Controllers;
@@ -14,6 +15,7 @@ builder.Services.ConfigureHttpJsonOptions(opt =>
 {
     opt.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     opt.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+    opt.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
 builder.Services
@@ -34,10 +36,10 @@ builder.Services
                     .HyperMediaConfigurationBuilder
                     .ConfigureType<Other>()
                     .ConfigureLink("SuperTest", "test")
-                    .AsTemplated(true)
                     .WithParameterMapping(type => type.Id, "id")
                     .TypeConfigurationBuilder
                     .ConfigureLink(nameof(DefaultHandler.Test), "super")
+                    .AsTemplated(true)
                     .WithParameterMapping(type => type.Id, "id");
             })
             .AddHalFormatter();
@@ -51,7 +53,7 @@ var router = app.UseFhydia();
 
 router.MapControllers();
 
-router.MapGet("/api/minimal-api/{id}", DefaultHandler.Test)
+router.MapGet("/api/minimal-api/{test}", DefaultHandler.Test)
     .WithName(nameof(DefaultHandler.Test));
 
 router.MapGet("/api/minimal-api/test", () => 
@@ -78,7 +80,7 @@ namespace Fhydia.Sample
 
     class DefaultHandler
     {
-        public static Ok<CustomReturnType> Test([FromRoute(Name = "id")] int id)
+        public static Ok<CustomReturnType> Test(HttpContext context, [FromServices] IConfiguration config, [FromRoute(Name = "test")] int id)
         {
             return TypedResults.Ok(new CustomReturnType
                 {
