@@ -7,20 +7,21 @@ namespace Fydhia.Core.Builders;
 
 public class NamedLinkConfigurationBuilder<TType> : LinkConfigurationBuilder where TType : class, new()
 {
+    private readonly Dictionary<string, string> _parameterMappings = new();
+
     private string? _rel;
-    private string _endpointName;
-    private Dictionary<string, string> _parameterMappings = new();
-    private string _name;
-    private string _title;
+    private string _endpointName = default!;
+    private string _name = default!;
+    private string _title = default!;
     private bool _templated;
 
     public TypeConfigurationBuilder<TType> TypeBuilder { get; }
-    public HyperMediaConfigurationBuilder HyperMediaConfigurationBuilder { get; }
+    public HyperMediaConfigurationBuilder HyperMediaBuilder { get; }
 
     internal NamedLinkConfigurationBuilder(TypeConfigurationBuilder<TType> typeConfigurationBuilder, string endpointName, string? rel)
     {
         TypeBuilder = typeConfigurationBuilder;
-        HyperMediaConfigurationBuilder = typeConfigurationBuilder.HyperMediaConfigurationBuilder;
+        HyperMediaBuilder = typeConfigurationBuilder.HyperMediaConfigurationBuilder;
 
         WithRel(rel);
         MapToEndpoint(endpointName);
@@ -81,17 +82,11 @@ public class NamedLinkConfigurationBuilder<TType> : LinkConfigurationBuilder whe
             throw new InvalidOperationException($"Endpoint with name {_endpointName} not found");
         }
 
-        var routeEndpointParser = new RouteEndpointParser();
-
-        return new NamedLinkConfiguration(_rel, _endpointName, _parameterMappings)
+        return new NamedLinkConfiguration(_rel, new ParsedEndpoint(routeEndpoint), _endpointName, _parameterMappings)
         {
             Name = _name,
             Title = _title,
             Templated = _templated,
-            ReturnType = routeEndpointParser.GetReturnedType(routeEndpoint),
-            Parameters = routeEndpointParser.GetParameters(routeEndpoint),
-            HttpMethod = routeEndpointParser.GetHttpMethod(routeEndpoint),
-            TemplatePath = routeEndpoint.RoutePattern.RawText
         };
     }
 

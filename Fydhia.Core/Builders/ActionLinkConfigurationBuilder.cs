@@ -13,22 +13,23 @@ public class ActionLinkConfigurationBuilder<TType, TControllerType> : LinkConfig
     where TControllerType : Controller
     where TType : class, new()
 {
+    private readonly TypeInfo _controllerType = typeof(TControllerType).GetTypeInfo();
+    private readonly Dictionary<string, string> _parameterMappings = new();
+
     private string? _rel;
-    private string _methodName;
-    private Dictionary<string, string> _parameterMappings = new();
-    private string _name;
-    private string _title;
+    private string _methodName = default!;
+    private string _name = default!;
+    private string _title = default!;
     private bool _templated;
 
-    private TypeInfo _controllerType = typeof(TControllerType).GetTypeInfo();
-    private string _controllerName => _controllerType.GetControllerClassName();
+    private string ControllerName => _controllerType.GetControllerClassName();
 
-    public TypeConfigurationBuilder<TType> TypeConfigurationBuilder { get; }
+    public TypeConfigurationBuilder<TType> TypeBuilder { get; }
     public HyperMediaConfigurationBuilder HyperMediaBuilder { get; }
 
     internal ActionLinkConfigurationBuilder(TypeConfigurationBuilder<TType> typeConfigurationBuilder, string methodName, string? rel = null)
     {
-        TypeConfigurationBuilder = typeConfigurationBuilder;
+        TypeBuilder = typeConfigurationBuilder;
         HyperMediaBuilder = typeConfigurationBuilder.HyperMediaConfigurationBuilder;
 
         WithRel(rel);
@@ -93,28 +94,24 @@ public class ActionLinkConfigurationBuilder<TType, TControllerType> : LinkConfig
         var routeEndpoint = GetRouteEndpoint(endpointDataSource);
         if(routeEndpoint is null)
         {
-            throw new InvalidOperationException($"Endpoint with method {_methodName} on controller {_controllerName} not found");
+            throw new InvalidOperationException($"Endpoint with method {_methodName} on controller {ControllerName} not found");
         }
 
-        var routeEndpointParser = new RouteEndpointParser();
+        var parsedEndpoint = new ParsedEndpoint(routeEndpoint);
 
-        return new ActionLinkConfiguration<TControllerType>(_rel, _methodName, _controllerName, _parameterMappings)
+        return new ActionLinkConfiguration<TControllerType>(_rel, parsedEndpoint, _methodName, ControllerName, _parameterMappings)
             {
                 Name = _name,
                 Title = _title,
-                Templated = _templated,
-                ReturnType = routeEndpointParser.GetReturnedType(routeEndpoint),
-                Parameters = routeEndpointParser.GetParameters(routeEndpoint),
-                HttpMethod = routeEndpointParser.GetHttpMethod(routeEndpoint),
-                TemplatePath = routeEndpoint.RoutePattern.RawText
+                Templated = _templated
             };
     }
 
     private RouteEndpoint? GetRouteEndpoint(EndpointDataSource routeBuilder)
     {
         var routeEndpoint = routeBuilder.Endpoints.FirstOrDefault(endpoint =>
-            endpoint.Metadata.GetMetadata<ControllerActionDescriptor>().ControllerName == _controllerName
-            && endpoint.Metadata.GetMetadata<ControllerActionDescriptor>().MethodInfo.Name == _methodName) as RouteEndpoint;
+            endpoint.Metadata.GetMetadata<ControllerActionDescriptor>()?.ControllerName == ControllerName
+            && endpoint.Metadata.GetMetadata<ControllerActionDescriptor>()?.MethodInfo.Name == _methodName) as RouteEndpoint;
 
         return routeEndpoint;
     }

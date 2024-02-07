@@ -10,7 +10,7 @@ public static class HttpContextExtensions
 {
     public static IEnumerable<string> GetAcceptedMediaTypes(this HttpRequest request)
     {
-        return request.Headers[HeaderNames.Accept].SelectMany(header => header.Split(';'));
+        return request.Headers[HeaderNames.Accept].SelectMany(header => header?.Split(';') ?? Array.Empty<string>());
     }
     
     public static bool RequestAcceptsHyperMediaTypes(this HttpContext httpContext)

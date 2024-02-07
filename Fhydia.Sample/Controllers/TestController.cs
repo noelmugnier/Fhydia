@@ -33,12 +33,12 @@ public class TestController : Controller
 public class CustomReturnType
 {
     public Guid Id { get; set; }
-    public string Value { get; set; }
+    public string Value { get; set; } = default!;
     public int Count { get; set; }
     public string CountAsString => Count.ToString();
-    public SubType Inner { get; set; }
+    public SubType? Inner { get; set; }
     public Other OtherObj { get; set; } = new Other() { Id = "test other" };
-    public CustomReturnType SubInner => Inner?.Uber;
+    public CustomReturnType? SubInner => Inner?.Uber;
     public void Meth(){}
 }
 
@@ -47,10 +47,10 @@ public class SubType
     public Guid Id { get; set; } = Guid.NewGuid();
     public string Value { get; set; } = "Default Value";
     public int Count { get; set; } = 5;
-    public CustomReturnType Uber { get; set; }
+    public CustomReturnType Uber { get; set; } = default!;
 }
 
 public class Other
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = default!;
 }

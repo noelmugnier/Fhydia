@@ -11,9 +11,24 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Fydhia.Core.Parser;
 
-public class RouteEndpointParser
+public class ParsedEndpoint
 {
-    public IReadOnlyCollection<RequestParameterDescriptor> GetParameters(RouteEndpoint routeEndpoint)
+    public ParsedEndpoint(RouteEndpoint routeEndpoint)
+    {
+        RouteEndpoint = routeEndpoint;
+        HttpMethod = GetHttpMethod(routeEndpoint);
+        Parameters = GetParameters(routeEndpoint);
+        ReturnedType = GetReturnedType(routeEndpoint);
+        TemplatePath = GetTemplatedPath(routeEndpoint, Parameters);
+    }
+
+    public string TemplatePath { get; }
+    public TypeInfo ReturnedType { get; }
+    public string HttpMethod { get; }
+    public RouteEndpoint RouteEndpoint { get; }
+    public IReadOnlyCollection<RequestParameterDescriptor> Parameters { get; }
+
+    private IReadOnlyCollection<RequestParameterDescriptor> GetParameters(RouteEndpoint routeEndpoint)
     {
         var requestParameterDescriptors = new List<RequestParameterDescriptor>();
         var methodInfo = routeEndpoint.Metadata.GetMetadata<MethodInfo>();
@@ -28,7 +43,7 @@ public class RouteEndpointParser
             : GetControllerEndpointParameters(controllerActionDescriptor, requestParameterDescriptors);
     }
 
-    public TypeInfo GetReturnedType(RouteEndpoint routeEndpoint)
+    private TypeInfo GetReturnedType(RouteEndpoint routeEndpoint)
     {
         var producesResponseTypeMetadata = routeEndpoint.Metadata.GetMetadata<IProducesResponseTypeMetadata>();
         if (producesResponseTypeMetadata?.Type != null)
@@ -63,6 +78,12 @@ public class RouteEndpointParser
         return GetMethodConcreteReturnType(controllerActionDescriptor.MethodInfo);
     }
 
+    private static string GetTemplatedPath(RouteEndpoint routeEndpoint,
+        IReadOnlyCollection<RequestParameterDescriptor> parameters)
+    {
+        return routeEndpoint.RoutePattern.RawText ?? string.Empty;
+    }
+
     private static TypeInfo GetMethodConcreteReturnType(MethodInfo methodInfo)
     {
         var returnType = methodInfo.ReturnType;
@@ -91,9 +112,8 @@ public class RouteEndpointParser
         var controllerParameterDescriptors = controllerActionDescriptor.Parameters
             .OfType<ControllerParameterDescriptor>()
             .Where(controllerParameterDescriptor => ParameterIsFromRequestValue(controllerParameterDescriptor.ParameterInfo))
-            .Select(controllerParameterDescriptor => new RequestParameterDescriptor
+            .Select(controllerParameterDescriptor => new RequestParameterDescriptor(controllerParameterDescriptor.ParameterInfo)
             {
-                ParameterInfo = controllerParameterDescriptor.ParameterInfo,
                 BindingSource = controllerParameterDescriptor.BindingInfo?.BindingSource,
                 BinderModelName = controllerParameterDescriptor.BindingInfo?.BinderModelName ?? controllerParameterDescriptor.Name
             });
@@ -113,9 +133,8 @@ public class RouteEndpointParser
             .Select(parameterInfo =>
             {
                 var parameterBinding = GetParameterBinding(parameterInfo);
-                return new RequestParameterDescriptor
+                return new RequestParameterDescriptor(parameterInfo)
                 {
-                    ParameterInfo = parameterInfo,
                     BindingSource = parameterBinding.BindingSource,
                     BinderModelName = parameterBinding.BinderModelName
                 };

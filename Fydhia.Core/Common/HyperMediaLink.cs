@@ -6,7 +6,7 @@ namespace Fydhia.Core.Common;
 
 public record HyperMediaLink
 {
-    public HyperMediaLink(HttpRequest httpRequest, string? path, TypeInfo? returnedType, IEnumerable<RequestParameterDescriptor>? parameters, string httpMethod, bool? templated = false)
+    public HyperMediaLink(HttpRequest httpRequest, string path, TypeInfo? returnedType, IEnumerable<RequestParameterDescriptor>? parameters, string httpMethod, bool? templated = false)
     {
         ReturnedType = returnedType;
         Parameters = parameters;
