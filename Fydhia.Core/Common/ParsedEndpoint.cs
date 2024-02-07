@@ -1,6 +1,5 @@
 using System.Reflection;
 using System.Security.Claims;
-using Fydhia.Core.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -9,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 
-namespace Fydhia.Core.Parser;
+namespace Fydhia.Core.Common;
 
 public class ParsedEndpoint
 {
@@ -76,6 +75,12 @@ public class ParsedEndpoint
         }
 
         return GetMethodConcreteReturnType(controllerActionDescriptor.MethodInfo);
+    }
+
+    private string GetHttpMethod(RouteEndpoint routeEndpoint)
+    {
+        var httpMethodMetadata = routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
+        return httpMethodMetadata?.HttpMethods.FirstOrDefault() ?? "GET";
     }
 
     private static string GetTemplatedPath(RouteEndpoint routeEndpoint,
@@ -258,12 +263,6 @@ public class ParsedEndpoint
         typeof(CancellationToken),
         typeof(ClaimsPrincipal)
     };
-
-    public string GetHttpMethod(RouteEndpoint routeEndpoint)
-    {
-        var httpMethodMetadata = routeEndpoint.Metadata.GetMetadata<IHttpMethodMetadata>();
-        return httpMethodMetadata?.HttpMethods.FirstOrDefault() ?? "GET";
-    }
 }
 
 internal record ParameterBinding
