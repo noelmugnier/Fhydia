@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
-using Fhydia.Controllers;
 using Fydhia.Core.Configurations;
+using Fydhia.Core.Parser;
 using Microsoft.AspNetCore.Routing;
 
 namespace Fydhia.Core.Builders;
@@ -14,12 +14,12 @@ public class NamedLinkConfigurationBuilder<TType> : LinkConfigurationBuilder whe
     private string _title;
     private bool _templated;
 
-    public TypeConfigurationBuilder<TType> TypeConfigurationBuilder { get; }
+    public TypeConfigurationBuilder<TType> TypeBuilder { get; }
     public HyperMediaConfigurationBuilder HyperMediaConfigurationBuilder { get; }
 
     internal NamedLinkConfigurationBuilder(TypeConfigurationBuilder<TType> typeConfigurationBuilder, string endpointName, string? rel)
     {
-        TypeConfigurationBuilder = typeConfigurationBuilder;
+        TypeBuilder = typeConfigurationBuilder;
         HyperMediaConfigurationBuilder = typeConfigurationBuilder.HyperMediaConfigurationBuilder;
 
         WithRel(rel);

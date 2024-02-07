@@ -1,10 +1,9 @@
 ﻿using System.Dynamic;
-using Fydhia.Core.Configurations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
-namespace Fhydia.Controllers;
+namespace Fydhia.Core.Configurations;
 
 public class ActionLinkConfiguration<TControllerType> : LinkConfiguration
     where TControllerType : Controller

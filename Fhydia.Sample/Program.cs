@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Fhydia.Sample;
 using Fhydia.Sample.Configurations;
 using Fhydia.Sample.Controllers;
 using Fydhia.Core;
@@ -23,24 +22,24 @@ builder.Services
     {
         fhydia
             .Configure(new[] { typeof(OtherTypeConfigurator).Assembly })
-            .Configure(configurationBuilder =>
+            .Configure(hyperMediaBuilder =>
             {
-                configurationBuilder
+                hyperMediaBuilder
                     .ConfigureType<CustomReturnType>()
-                    .ConfigureSelfLink<TestController>(controller => controller.GetFromQueryParam)
-                    .WithParameterMapping(type => type.Id, "id")
-                    .HyperMediaConfigurationBuilder
+                        .ConfigureSelfLink<TestController>(controller => controller.GetFromQueryParam)
+                        .WithParameterMapping(type => type.Id, "id")
+                .HyperMediaBuilder
                     .ConfigureType<SubType>()
-                    .ConfigureSelfLink<TestController>(controller => controller.GetFromRouteParam)
-                    .WithParameterMapping(type => type.Id, "id")
-                    .HyperMediaConfigurationBuilder
+                        .ConfigureSelfLink<TestController>(controller => controller.GetFromRouteParam)
+                        .WithParameterMapping(type => type.Id, "id")
+                .HyperMediaBuilder
                     .ConfigureType<Other>()
-                    .ConfigureLink("SuperTest", "test")
-                    .WithParameterMapping(type => type.Id, "id")
-                    .TypeConfigurationBuilder
-                    .ConfigureLink(nameof(DefaultHandler.Test), "super")
-                    .AsTemplated(true)
-                    .WithParameterMapping(type => type.Id, "id");
+                        .ConfigureLink("SuperTest", "test")
+                        .WithParameterMapping(type => type.Id, "id")
+                    .TypeBuilder
+                        .ConfigureLink(nameof(DefaultHandler.Test), "super")
+                        .AsTemplated(true)
+                        .WithParameterMapping(type => type.Id, "id");
             })
             .AddHalFormatter();
     });
@@ -49,14 +48,13 @@ var app = builder.Build();
 
 app.UseRouting();
 
-var router = app.UseFhydia();
+var mainRoute = app.UseFhydiaMainRoute();
+mainRoute.MapControllers();
 
-router.MapControllers();
-
-router.MapGet("/api/minimal-api/{test}", DefaultHandler.Test)
+mainRoute.MapGet("/api/minimal-api/{test}", DefaultHandler.Test)
     .WithName(nameof(DefaultHandler.Test));
 
-router.MapGet("/api/minimal-api/test", () => 
+mainRoute.MapGet("/api/minimal-api/test", () =>
     TypedResults.Ok(new CustomReturnType
         {
             Count = 5,
@@ -72,24 +70,17 @@ app.UseSwaggerUI();
 
 app.Run();
 
-namespace Fhydia.Sample
+public static class DefaultHandler
 {
-    public partial class Program
+    public static Ok<CustomReturnType> Test(HttpContext context, [FromServices] IConfiguration config, [FromRoute(Name = "test")] int id)
     {
-    }
-
-    class DefaultHandler
-    {
-        public static Ok<CustomReturnType> Test(HttpContext context, [FromServices] IConfiguration config, [FromRoute(Name = "test")] int id)
-        {
-            return TypedResults.Ok(new CustomReturnType
+        return TypedResults.Ok(new CustomReturnType
+            {
+                Count = id,
+                Inner = new SubType()
                 {
-                    Count = id,
-                    Inner = new SubType()
-                    {
-                        Uber = new CustomReturnType()
-                    }
-                });
-        }
+                    Uber = new CustomReturnType()
+                }
+            });
     }
 }

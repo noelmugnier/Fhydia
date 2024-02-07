@@ -4,7 +4,7 @@ using Fydhia.Core.Configurations;
 
 namespace Fhydia.Sample.Configurations;
 
-public class OtherTypeConfigurator : ITypeConfigurator<Other>
+public class OtherTypeConfigurator : IHyperMediaTypeConfigurator<Other>
 {
     public void Configure(TypeConfigurationBuilder<Other> builder)
     {

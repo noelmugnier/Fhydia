@@ -1,7 +1,7 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Fydhia.Core.Configurations;
+namespace Fydhia.Core.Common;
 
 public record RequestParameterDescriptor
 {

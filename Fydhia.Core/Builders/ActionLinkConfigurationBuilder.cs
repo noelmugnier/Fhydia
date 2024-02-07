@@ -1,13 +1,13 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
-using Fydhia.Core.Builders;
 using Fydhia.Core.Configurations;
 using Fydhia.Core.Extensions;
+using Fydhia.Core.Parser;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Routing;
 
-namespace Fhydia.Controllers;
+namespace Fydhia.Core.Builders;
 
 public class ActionLinkConfigurationBuilder<TType, TControllerType> : LinkConfigurationBuilder
     where TControllerType : Controller
@@ -24,12 +24,12 @@ public class ActionLinkConfigurationBuilder<TType, TControllerType> : LinkConfig
     private string _controllerName => _controllerType.GetControllerClassName();
 
     public TypeConfigurationBuilder<TType> TypeConfigurationBuilder { get; }
-    public HyperMediaConfigurationBuilder HyperMediaConfigurationBuilder { get; }
+    public HyperMediaConfigurationBuilder HyperMediaBuilder { get; }
 
     internal ActionLinkConfigurationBuilder(TypeConfigurationBuilder<TType> typeConfigurationBuilder, string methodName, string? rel = null)
     {
         TypeConfigurationBuilder = typeConfigurationBuilder;
-        HyperMediaConfigurationBuilder = typeConfigurationBuilder.HyperMediaConfigurationBuilder;
+        HyperMediaBuilder = typeConfigurationBuilder.HyperMediaConfigurationBuilder;
 
         WithRel(rel);
         MapToMethod(methodName);

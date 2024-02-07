@@ -36,7 +36,7 @@ public class FhydiaBuilder
 
     public FhydiaBuilder Configure(Assembly[] assemblies)
     {
-        var genericTypeConfiguration = typeof(ITypeConfigurator<>);
+        var genericTypeConfiguration = typeof(IHyperMediaTypeConfigurator<>);
         foreach (var assembly in assemblies)
         {
             var typesToConfigure = assembly
@@ -47,7 +47,7 @@ public class FhydiaBuilder
 
             foreach (var typeToConfigure in typesToConfigure)
             {
-                var typeConfiguration = (ITypeConfigurator)Activator.CreateInstance(typeToConfigure)!;
+                var typeConfiguration = (IHyperMediaTypeConfigurator)Activator.CreateInstance(typeToConfigure)!;
                 var configureTypeMethodInfo = typeof(HyperMediaConfigurationBuilder).GetMethod(nameof(HyperMediaConfigurationBuilder.ConfigureType));
 
                 var genericInterface = typeToConfigure.GetInterfaces().SingleOrDefault(i =>

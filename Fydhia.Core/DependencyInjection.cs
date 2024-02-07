@@ -16,7 +16,7 @@ public static class DependencyInjection
         return builder.Build();
     }
 
-    public static IEndpointRouteBuilder UseFhydia(this IEndpointRouteBuilder app, string? endpointsBasePath = null)
+    public static IEndpointRouteBuilder UseFhydiaMainRoute(this IEndpointRouteBuilder app, string? endpointsBasePath = null)
     {
         return app.MapGroup(endpointsBasePath ?? string.Empty)
             .AddEndpointFilter<HyperMediaEndpointFilter>();

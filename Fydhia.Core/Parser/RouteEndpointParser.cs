@@ -1,6 +1,6 @@
 using System.Reflection;
 using System.Security.Claims;
-using Fydhia.Core.Configurations;
+using Fydhia.Core.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 
-namespace Fhydia.Controllers;
+namespace Fydhia.Core.Parser;
 
 public class RouteEndpointParser
 {
