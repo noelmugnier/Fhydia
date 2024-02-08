@@ -15,6 +15,7 @@ public class ActionLinkConfigurationBuilder<TType, TControllerType> : LinkConfig
 {
     private readonly TypeInfo _controllerType = typeof(TControllerType).GetTypeInfo();
     private readonly Dictionary<string, string> _parameterMappings = new();
+    private readonly Dictionary<string, string> _headerMappings = new();
 
     private string? _rel;
     private string _methodName = default!;
@@ -77,6 +78,17 @@ public class ActionLinkConfigurationBuilder<TType, TControllerType> : LinkConfig
 
         return this;
     }
+
+    public ActionLinkConfigurationBuilder<TType, TControllerType> WithHeaderMapping(Expression<Func<TType, object?>> propertyExpression, string headerName)
+    {
+        if(propertyExpression.Body is UnaryExpression unaryExpression)
+            _headerMappings.Add(headerName, ((MemberExpression)unaryExpression.Operand).Member.Name);
+        else if (propertyExpression.Body is MemberExpression memberExpression)
+            _headerMappings.Add(headerName, memberExpression.Member.Name);
+        else
+            throw new InvalidOperationException();
+        return this;
+    }
     
     internal override LinkConfiguration Build(EndpointDataSource endpointDataSource)
     {
@@ -97,9 +109,9 @@ public class ActionLinkConfigurationBuilder<TType, TControllerType> : LinkConfig
             throw new InvalidOperationException($"Endpoint with method {_methodName} on controller {ControllerName} not found");
         }
 
-        var parsedEndpoint = new ParsedEndpoint(routeEndpoint);
+        var parsedEndpoint = new EndpointInfo(routeEndpoint);
 
-        return new ActionLinkConfiguration<TControllerType>(_rel, parsedEndpoint, _methodName, ControllerName, _parameterMappings)
+        return new ActionLinkConfiguration<TControllerType>(_rel, parsedEndpoint, _methodName, ControllerName, _parameterMappings, _headerMappings)
             {
                 Name = _name,
                 Title = _title,

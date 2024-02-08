@@ -9,8 +9,10 @@ public class NamedLinkConfiguration : LinkConfiguration
 {
     private readonly string _endpointName;
 
-    internal NamedLinkConfiguration(string? rel, ParsedEndpoint parsedEndpoint, string endpointName, IDictionary<string, string>? parameterMappings = null)
-        : base(rel ?? endpointName, parsedEndpoint, parameterMappings)
+    internal NamedLinkConfiguration(string? rel, EndpointInfo endpointInfo, string endpointName,
+            IDictionary<string, string>? parameterMappings = null,
+            IDictionary<string, string>? headerMappings = null)
+        : base(rel ?? endpointName, endpointInfo, parameterMappings, headerMappings)
     {
         _endpointName = endpointName;
     }

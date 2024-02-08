@@ -15,7 +15,7 @@ public class TestController : Controller
     }
 
     [HttpGet("query", Name = "ActionQuery")]
-    public Results<Ok<List<CustomReturnType>>, BadRequest> GetFromQueryParam([FromQuery(Name = "temp")] int id)
+    public Results<Ok<List<CustomReturnType>>, BadRequest> GetFromQueryParam([FromQuery(Name = "Id")] int id)
     {
         return TypedResults.Ok(new List<CustomReturnType>
             { new() { Id = Guid.NewGuid(), Value = "GetFromQueryParam", Count = 2, Inner = new() } });
@@ -23,7 +23,7 @@ public class TestController : Controller
 
     [HttpGet("headers")]
     [EndpointName("SuperTest")]
-    public IEnumerable<CustomReturnType> GetFromHeaderParams([FromHeader(Name = "HeaderName")] int id)
+    public IEnumerable<CustomReturnType> GetFromHeaderParams([FromHeader(Name = "X-Test-Id")] int? id)
     {
         return new List<CustomReturnType>
             { new() { Id = Guid.NewGuid(), Value = "GetFromHeaderParams", Count = 3, Inner = new() } };

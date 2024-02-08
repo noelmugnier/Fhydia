@@ -12,10 +12,11 @@ public class ActionLinkConfiguration<TControllerType> : LinkConfiguration
     private readonly string _controllerName;
     private readonly string _methodName;
 
-    internal ActionLinkConfiguration(string? rel, ParsedEndpoint parsedEndpoint, string methodName,
+    internal ActionLinkConfiguration(string? rel, EndpointInfo endpointInfo, string methodName,
         string controllerName,
-        IDictionary<string, string>? parameterMappings = null)
-        : base(rel ?? methodName, parsedEndpoint, parameterMappings)
+        IDictionary<string, string>? parameterMappings = null,
+        IDictionary<string, string>? headerMappings = null)
+        : base(rel ?? methodName, endpointInfo, parameterMappings, headerMappings)
     {
         _controllerName = controllerName;
         _methodName = methodName;

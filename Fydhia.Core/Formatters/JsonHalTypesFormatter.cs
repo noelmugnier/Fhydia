@@ -44,10 +44,10 @@ public class JsonHalTypesFormatter : IHyperMediaTypesFormatter
 
         foreach (var linkConfiguration in typeConfiguration.ConfiguredLinks)
         {
-            var hyperMediaLink =
-                linkConfiguration.GenerateHyperMediaLink(httpContext, _linkGenerator, responseObjectProperties);
-            links.TryAdd(linkConfiguration.Rel,
-                new HyperMediaHalLink(hyperMediaLink.Href, linkConfiguration.Templated, linkConfiguration.Title, linkConfiguration.Name));
+            var href = linkConfiguration.GenerateHref(httpContext, _linkGenerator, responseObjectProperties);
+            var headers = linkConfiguration.GenerateHeaders(httpContext, responseObjectProperties);
+            links.TryAdd(linkConfiguration.Rel, new HyperMediaHalLink(href, linkConfiguration.Templated,
+                linkConfiguration.Title, linkConfiguration.Name, headers));
         }
 
         responseObject.TryAdd("_links", links);

@@ -8,6 +8,7 @@ namespace Fydhia.Core.Builders;
 public class NamedLinkConfigurationBuilder<TType> : LinkConfigurationBuilder where TType : class, new()
 {
     private readonly Dictionary<string, string> _parameterMappings = new();
+    private readonly Dictionary<string, string> _headerMappings = new();
 
     private string? _rel;
     private string _endpointName = default!;
@@ -68,6 +69,17 @@ public class NamedLinkConfigurationBuilder<TType> : LinkConfigurationBuilder whe
 
         return this;
     }
+
+    public NamedLinkConfigurationBuilder<TType> WithHeaderMapping(Expression<Func<TType, object?>> propertyExpression, string headerName)
+    {
+        if(propertyExpression.Body is UnaryExpression unaryExpression)
+            _headerMappings.Add(headerName, ((MemberExpression)unaryExpression.Operand).Member.Name);
+        else if (propertyExpression.Body is MemberExpression memberExpression)
+            _headerMappings.Add(headerName, memberExpression.Member.Name);
+        else
+            throw new InvalidOperationException();
+        return this;
+    }
     
     internal override LinkConfiguration Build(EndpointDataSource endpointDataSource)
     {
@@ -76,13 +88,13 @@ public class NamedLinkConfigurationBuilder<TType> : LinkConfigurationBuilder whe
             throw new ArgumentException($"Endpoint name must be provided to build a link configuration");
         }
 
-        var routeEndpoint = GetRouteEndpoint(endpointDataSource);
+        var routeEndpoint = GetRouteEndpointWithName(endpointDataSource, _endpointName);
         if (routeEndpoint == null)
         {
             throw new InvalidOperationException($"Endpoint with name {_endpointName} not found");
         }
 
-        return new NamedLinkConfiguration(_rel, new ParsedEndpoint(routeEndpoint), _endpointName, _parameterMappings)
+        return new NamedLinkConfiguration(_rel, new EndpointInfo(routeEndpoint), _endpointName, _parameterMappings, _headerMappings)
         {
             Name = _name,
             Title = _title,
@@ -90,7 +102,7 @@ public class NamedLinkConfigurationBuilder<TType> : LinkConfigurationBuilder whe
         };
     }
 
-    private RouteEndpoint? GetRouteEndpoint(EndpointDataSource routeBuilder)
+    private RouteEndpoint? GetRouteEndpointWithName(EndpointDataSource routeBuilder, string endpointName)
     {
         foreach (var endpoint in routeBuilder.Endpoints)
         {
@@ -99,8 +111,8 @@ public class NamedLinkConfigurationBuilder<TType> : LinkConfigurationBuilder whe
             if (endpointNameMetadata == null && endpointNameAttribute == null)
                 continue;
 
-            if (endpointNameMetadata?.EndpointName != _endpointName &&
-                endpointNameAttribute?.EndpointName != _endpointName)
+            if (endpointNameMetadata?.EndpointName != endpointName &&
+                endpointNameAttribute?.EndpointName != endpointName)
                 continue;
 
             return endpoint as RouteEndpoint;

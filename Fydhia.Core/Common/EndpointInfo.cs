@@ -7,39 +7,45 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Fydhia.Core.Common;
 
-public class ParsedEndpoint
+public class EndpointInfo
 {
-    public ParsedEndpoint(RouteEndpoint routeEndpoint)
+    public EndpointInfo(RouteEndpoint routeEndpoint)
     {
-        RouteEndpoint = routeEndpoint;
         HttpMethod = GetHttpMethod(routeEndpoint);
-        Parameters = GetParameters(routeEndpoint);
         ReturnedType = GetReturnedType(routeEndpoint);
+
+        Parameters = GetInput(routeEndpoint, IsParameter);
+        Headers = GetInput(routeEndpoint, IsHeader);
+        Contents = GetInput(routeEndpoint, IsContent);
+
         TemplatePath = GetTemplatedPath(routeEndpoint, Parameters);
     }
 
     public string TemplatePath { get; }
     public TypeInfo ReturnedType { get; }
     public string HttpMethod { get; }
-    public RouteEndpoint RouteEndpoint { get; }
-    public IReadOnlyCollection<RequestParameterDescriptor> Parameters { get; }
+    public IReadOnlyCollection<RequestInputDescriptor> Parameters { get; }
+    public IReadOnlyCollection<RequestInputDescriptor> Headers { get; }
+    public IReadOnlyCollection<RequestInputDescriptor> Contents { get; }
 
-    private IReadOnlyCollection<RequestParameterDescriptor> GetParameters(RouteEndpoint routeEndpoint)
+    private IReadOnlyCollection<RequestInputDescriptor> GetInput(RouteEndpoint routeEndpoint,
+        Func<ParameterInfo, bool> filter)
     {
-        var requestParameterDescriptors = new List<RequestParameterDescriptor>();
+        var requestParameterDescriptors = new List<RequestInputDescriptor>();
         var methodInfo = routeEndpoint.Metadata.GetMetadata<MethodInfo>();
         if (methodInfo is not null)
         {
-            return GetMinimalApiEndpointParameters(methodInfo, requestParameterDescriptors);
+            return GetMinimalApiEndpointParameters(methodInfo, requestParameterDescriptors, filter);
         }
 
         var controllerActionDescriptor = routeEndpoint.Metadata.GetMetadata<ControllerActionDescriptor>();
         return controllerActionDescriptor is null
             ? requestParameterDescriptors
-            : GetControllerEndpointParameters(controllerActionDescriptor, requestParameterDescriptors);
+            : GetControllerEndpointParameters(controllerActionDescriptor, requestParameterDescriptors, filter);
     }
 
     private TypeInfo GetReturnedType(RouteEndpoint routeEndpoint)
@@ -84,9 +90,15 @@ public class ParsedEndpoint
     }
 
     private static string GetTemplatedPath(RouteEndpoint routeEndpoint,
-        IReadOnlyCollection<RequestParameterDescriptor> parameters)
+        IReadOnlyCollection<RequestInputDescriptor> parameters)
     {
-        return routeEndpoint.RoutePattern.RawText ?? string.Empty;
+        var path = routeEndpoint.RoutePattern.RawText ?? string.Empty;
+        var parameterList = parameters
+            .Where(parameter => parameter.BindingSource?.Id == BindingSource.Query.Id)
+            .Select(parameter =>
+                new KeyValuePair<string, string?>(parameter.BinderModelName, $"{{{parameter.BinderModelName}}}"));
+
+        return Uri.UnescapeDataString(QueryHelpers.AddQueryString(path, parameterList));
     }
 
     private static TypeInfo GetMethodConcreteReturnType(MethodInfo methodInfo)
@@ -97,7 +109,8 @@ public class ParsedEndpoint
             returnType = RecursivelyFindComplexOrSimpleType(returnType);
         }
 
-        if (returnType is not null && (returnType.IsGenericType || NonSupportedNonGenericTypes.Any(typeToSkip => typeToSkip == returnType)))
+        if (returnType is not null && (returnType.IsGenericType ||
+                                       NonSupportedNonGenericTypes.Any(typeToSkip => typeToSkip == returnType)))
         {
             return returnType.GetTypeInfo();
         }
@@ -110,35 +123,37 @@ public class ParsedEndpoint
         return returnType.GetTypeInfo();
     }
 
-    private static IReadOnlyCollection<RequestParameterDescriptor> GetControllerEndpointParameters(
+    private static IReadOnlyCollection<RequestInputDescriptor> GetControllerEndpointParameters(
         ControllerActionDescriptor controllerActionDescriptor,
-        List<RequestParameterDescriptor> requestParameterDescriptors)
+        List<RequestInputDescriptor> requestParameterDescriptors, Func<ParameterInfo, bool> filter)
     {
         var controllerParameterDescriptors = controllerActionDescriptor.Parameters
             .OfType<ControllerParameterDescriptor>()
-            .Where(controllerParameterDescriptor => ParameterIsFromRequestValue(controllerParameterDescriptor.ParameterInfo))
-            .Select(controllerParameterDescriptor => new RequestParameterDescriptor(controllerParameterDescriptor.ParameterInfo)
-            {
-                BindingSource = controllerParameterDescriptor.BindingInfo?.BindingSource,
-                BinderModelName = controllerParameterDescriptor.BindingInfo?.BinderModelName ?? controllerParameterDescriptor.Name
-            });
+            .Where(controllerParameterDescriptor =>
+                filter(controllerParameterDescriptor.ParameterInfo))
+            .Select(controllerParameterDescriptor =>
+                new RequestInputDescriptor(controllerParameterDescriptor.ParameterInfo)
+                {
+                    BindingSource = controllerParameterDescriptor.BindingInfo?.BindingSource,
+                    BinderModelName = controllerParameterDescriptor.BindingInfo?.BinderModelName ??
+                                      controllerParameterDescriptor.Name
+                });
 
         requestParameterDescriptors.AddRange(controllerParameterDescriptors);
 
         return requestParameterDescriptors;
     }
 
-    private IReadOnlyCollection<RequestParameterDescriptor> GetMinimalApiEndpointParameters(
-        MethodInfo methodInfo,
-        List<RequestParameterDescriptor> requestParameterDescriptors)
+    private IReadOnlyCollection<RequestInputDescriptor> GetMinimalApiEndpointParameters(MethodInfo methodInfo,
+        List<RequestInputDescriptor> requestParameterDescriptors, Func<ParameterInfo, bool> filter)
     {
         var parameterDescriptors = methodInfo
             .GetParameters()
-            .Where(ParameterIsFromRequestValue)
+            .Where(filter)
             .Select(parameterInfo =>
             {
                 var parameterBinding = GetParameterBinding(parameterInfo);
-                return new RequestParameterDescriptor(parameterInfo)
+                return new RequestInputDescriptor(parameterInfo)
                 {
                     BindingSource = parameterBinding.BindingSource,
                     BinderModelName = parameterBinding.BinderModelName
@@ -150,9 +165,24 @@ public class ParsedEndpoint
         return requestParameterDescriptors;
     }
 
-    private static bool ParameterIsFromRequestValue(ParameterInfo parameter)
+    private static bool IsParameter(ParameterInfo parameter)
     {
-        return parameter.GetCustomAttributes().OfType<IBindingSourceMetadata>().All(bindingSource => bindingSource.BindingSource != BindingSource.Services) &&
+        return parameter.GetCustomAttributes().OfType<IBindingSourceMetadata>()
+                   .All(bindingSource => bindingSource.BindingSource != BindingSource.Services && (bindingSource.BindingSource == BindingSource.Path || bindingSource.BindingSource == BindingSource.Query)) &&
+               DefaultMinimalApiInjectedTypes.All(type => type != parameter.ParameterType);
+    }
+
+    private static bool IsHeader(ParameterInfo parameter)
+    {
+        return parameter.GetCustomAttributes().OfType<IBindingSourceMetadata>()
+                   .All(bindingSource => bindingSource.BindingSource != BindingSource.Services && bindingSource.BindingSource == BindingSource.Header) &&
+               DefaultMinimalApiInjectedTypes.All(type => type != parameter.ParameterType);
+    }
+
+    private static bool IsContent(ParameterInfo parameter)
+    {
+        return parameter.GetCustomAttributes().OfType<IBindingSourceMetadata>()
+                   .All(bindingSource => bindingSource.BindingSource != BindingSource.Services && (bindingSource.BindingSource == BindingSource.Body || bindingSource.BindingSource == BindingSource.Form)) &&
                DefaultMinimalApiInjectedTypes.All(type => type != parameter.ParameterType);
     }
 
@@ -165,7 +195,7 @@ public class ParsedEndpoint
         {
             return new ParameterBinding
             {
-                BinderModelName = parameterInfo.Name,
+                BinderModelName = parameterInfo.Name!,
             };
         }
 
@@ -178,7 +208,7 @@ public class ParsedEndpoint
         return bindingInfo;
     }
 
-    private static string? GetBinderModelNameFromMetadata(ParameterInfo parameterInfo,
+    private static string GetBinderModelNameFromMetadata(ParameterInfo parameterInfo,
         IBindingSourceMetadata? bindingSourceMetadata)
     {
         var binderModelName = bindingSourceMetadata switch
@@ -189,7 +219,8 @@ public class ParsedEndpoint
             IFromFormMetadata fromFormMetadata => fromFormMetadata.Name,
             _ => parameterInfo.Name
         };
-        return binderModelName;
+
+        return binderModelName!;
     }
 
     private static BindingSource? GetBindingSourceFromMetadata(IBindingSourceMetadata? bindingSourceMetadata)
@@ -215,7 +246,8 @@ public class ParsedEndpoint
         }
 
         var genericReturnType = returnType.GetGenericTypeDefinition();
-        if (!returnType.IsGenericType || GenericTypesToRecurse.All(genericTypeToRecurse => genericTypeToRecurse != genericReturnType))
+        if (!returnType.IsGenericType ||
+            GenericTypesToRecurse.All(genericTypeToRecurse => genericTypeToRecurse != genericReturnType))
         {
             return returnType;
         }
@@ -267,6 +299,6 @@ public class ParsedEndpoint
 
 internal record ParameterBinding
 {
-    public string? BinderModelName { get; init; }
+    public string BinderModelName { get; init; } = default!;
     public BindingSource? BindingSource { get; init; }
 }
